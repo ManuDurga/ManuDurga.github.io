@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyGuard AI — AWS Anomaly Intelligence</title>
+  <style>
+    :root{--bg:#07101f;--panel:#0d192b;--panel2:#111f34;--line:#24344c;--text:#f5f8ff;--muted:#91a0b8;--cyan:#42d3ff;--temp:#ff5f6d;--press:#50d890;--humid:#4c8dff;--amber:#ffbd59;--red:#ff5c74;--radius:18px}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 15% -5%,#123156 0,transparent 30%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    button,select{font:inherit}.shell{max-width:1540px;margin:auto;padding:24px}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.brand{display:flex;align-items:center;gap:13px}.brandmark{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#19c6fa,#326bff);display:grid;place-items:center;box-shadow:0 0 30px #1dbefb33}.brand h1{font-size:25px;line-height:1;margin:0;letter-spacing:-.5px}.brand p{margin:5px 0 0;color:var(--muted);font-size:12px}.realtime{min-width:154px;padding-left:14px;margin-left:4px;border-left:1px solid #29415e;font-variant-numeric:tabular-nums}.realtime b{display:block;font-size:14px;color:#d9ecff}.realtime small{display:block;margin-top:3px;color:#66809e;font-size:8px;letter-spacing:1.3px}.live{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid #25405d;border-radius:999px;background:#0a1728;color:#b5c4da;font-size:12px}.pulse{width:8px;height:8px;border-radius:50%;background:#4fe293;box-shadow:0 0 0 0 #4fe29388;animation:pulse 1.7s infinite}@keyframes pulse{70%{box-shadow:0 0 0 8px transparent}}
+    .scenario-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}.scenario{position:relative;min-height:76px;text-align:left;padding:14px 15px;border:1px solid #23354f;background:linear-gradient(145deg,#101f34,#0b1728);color:var(--text);border-radius:14px;cursor:pointer;transition:.2s}.scenario:hover{transform:translateY(-2px);border-color:#49627f}.scenario.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent),0 7px 25px #0005}.scenario.active:before{content:"";position:absolute;top:0;left:16px;right:16px;height:3px;border-radius:0 0 4px 4px;background:var(--accent)}.scenario .icon{font-size:17px;margin-bottom:8px}.scenario strong{display:block;font-size:14px}.scenario small{color:var(--muted);font-size:11px}.scenario[data-mode=normal]{--accent:#50d890}.scenario[data-mode=frozen],.scenario[data-mode=spike]{--accent:#ffbd59}.scenario[data-mode=storm],.scenario[data-mode=flood]{--accent:#4c8dff}
+    .grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(350px,.74fr);gap:16px}.card{border:1px solid #1d3048;background:linear-gradient(160deg,#0e1a2cdd,#0a1525ee);border-radius:var(--radius);box-shadow:0 18px 42px #0004}.graph-card{padding:18px}.card-head{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:14px}.eyebrow{font-size:10px;letter-spacing:1.7px;text-transform:uppercase;color:#6e849f;margin-bottom:5px}.card h2{margin:0;font-size:17px;letter-spacing:-.2px}.head-actions{display:flex;gap:9px;align-items:center}.station-select,.pace-wrap select{background:#0b1728;color:#dbe7f9;border:1px solid #2a3d56;border-radius:9px;padding:8px}.station-select{max-width:148px}.pace-wrap{display:none;align-items:center;gap:7px;color:var(--muted);font-size:11px}.pace-wrap.show{display:flex}.ghost,.primary{border-radius:10px;padding:9px 12px;cursor:pointer;border:1px solid #2a405c;color:#ddecff;background:#111f33;font-weight:650;font-size:12px}.primary{background:linear-gradient(135deg,#1bbce8,#3879ff);border-color:transparent;color:#fff}.ghost:hover,.primary:hover{filter:brightness(1.12)}
+    .legend{display:flex;gap:18px;align-items:center;margin-bottom:10px;padding-left:4px}.legend span{display:flex;align-items:center;gap:7px;color:#b5c1d2;font-size:11px}.dot{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}.chart-wrap{height:425px;position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#07121f,#091625);border:1px solid #1b2a3e}.chart-wrap canvas{width:100%;height:100%;display:block}.chart-overlay{position:absolute;left:108px;bottom:12px;color:#7689a3;font-size:10px;pointer-events:none}.subgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}.map-card,.health-card{padding:18px;min-height:360px}.mapbox{height:300px;margin-top:4px;display:grid;place-items:center;overflow:hidden}.india-map{height:100%;width:100%;filter:drop-shadow(0 10px 18px #0008)}.boundary-art{opacity:.72;filter:invert(72%) sepia(18%) saturate(900%) hue-rotate(166deg)}.india-shape{fill:#162a43;stroke:#52728f;stroke-width:1.8;stroke-linejoin:round}.island{fill:#162a43;stroke:#52728f;stroke-width:1}.station-pin{cursor:pointer}.station-pin .ring{fill:#fff;stroke:#26bdec;stroke-width:5}.station-pin .stem{stroke:#26bdec;stroke-width:4}.station-pin:hover .ring,.station-pin.active .ring{filter:drop-shadow(0 0 7px #32caff);stroke:#7ee8ff}.station-pin.active .ring{stroke-width:7}.pin-label{fill:#d9e8fa;font-size:14px;font-weight:800;text-anchor:middle;paint-order:stroke;stroke:#07101f;stroke-width:5px}.map-note{font-size:9px;color:#7690ac;text-align:center;margin-top:-3px}.map-note a{color:#89b9dc}
+    .heatmap{display:grid;gap:10px;margin-top:18px}.station-row{display:grid;grid-template-columns:105px 1fr 38px;gap:9px;align-items:center;font-size:11px}.station-row .name{color:#c8d5e5}.bar{height:11px;background:#13233a;border-radius:4px;overflow:hidden}.fill{height:100%;width:var(--w);background:var(--col);border-radius:4px;box-shadow:0 0 9px color-mix(in srgb,var(--col),transparent 45%)}.pct{text-align:right;color:#b9c9dc;font-variant-numeric:tabular-nums}.health-note{margin-top:17px;border-top:1px solid #1e324b;padding-top:12px;color:#7288a4;font-size:10px;line-height:1.5}
+    .intel{padding:20px;position:sticky;top:16px;align-self:start}.status-line{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--status);color:var(--status);background:color-mix(in srgb,var(--status),transparent 90%);padding:6px 9px;border-radius:999px;font-size:10px;font-weight:750;letter-spacing:.6px;text-transform:uppercase}.intel-title{font-size:28px!important;margin-top:12px!important}.subtitle{color:#91a3ba;margin:5px 0 18px;font-size:12px}.section{padding:15px 0;border-top:1px solid #203149}.section-title{font-size:10px;color:#6f86a2;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:10px}.rca{font-size:13px;color:#d9e4f2;line-height:1.55}.signal-list{display:grid;gap:8px;margin-top:12px}.signal{display:flex;justify-content:space-between;font-size:11px;color:#95a8bf}.signal b{font-weight:700}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.metric{padding:12px;border:1px solid #20334c;border-radius:12px;background:#0b1829}.metric small{display:block;color:#7187a2;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.metric strong{display:block;font-size:20px;margin-top:5px}.metric span{font-size:10px;color:#7f93ab}.health-meter{height:8px;border-radius:99px;background:#16253a;margin:12px 0 7px;overflow:hidden}.health-meter div{height:100%;width:var(--health);background:var(--health-color);transition:.4s}.reason{font-size:11px;color:#91a5bc;line-height:1.45}.corrected{border:1px dashed #2e4967;border-radius:12px;padding:12px;background:#0a1626}.corrected-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.corrected-grid div{text-align:center}.corrected-grid small{font-size:8px;color:#6e839d;text-transform:uppercase}.corrected-grid b{font-size:12px;display:block;margin-top:3px}.alert-btn{width:100%;margin-top:12px;display:none}.alert-btn.show{display:block}.alert-btn.sending{background:#c58a14;border-color:#ffd66f;color:#fff4cc}.alert-btn.sent{background:#174433;border-color:#2e8c68;color:#7cf1bc}.disclaimer{color:#617791;font-size:9px;line-height:1.5;margin-top:10px}
+    .toast{position:fixed;right:24px;bottom:24px;background:#112b25;border:1px solid #2d916c;color:#bfffe4;padding:13px 17px;border-radius:12px;font-size:12px;transform:translateY(30px);opacity:0;transition:.3s;z-index:30}.toast.show{transform:none;opacity:1}.modal{position:fixed;inset:0;background:#020711d9;display:none;place-items:center;padding:25px;z-index:20}.modal.open{display:grid}.modal-box{max-width:980px;width:100%;background:#0d192b;border:1px solid #2a405d;border-radius:18px;padding:18px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.modal-head h3{margin:0;font-size:16px}.modal canvas{width:100%;height:auto;border-radius:12px;background:#07121f}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:12px}.close{background:transparent;border:none;color:#9db0c7;font-size:22px;cursor:pointer}
+    @media(max-width:1050px){.grid{grid-template-columns:1fr}.intel{position:static}.subgrid{grid-template-columns:1fr 1fr}}@media(max-width:700px){.shell{padding:14px}.scenario-row{grid-template-columns:repeat(2,1fr)}.scenario:last-child{grid-column:span 2}.subgrid{grid-template-columns:1fr}.card-head{align-items:flex-start;flex-direction:column}.head-actions{width:100%;flex-wrap:wrap}.chart-wrap{height:380px}.topbar{align-items:flex-start}.live{display:none}.station-row{grid-template-columns:90px 1fr 35px}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="topbar">
+    <div class="brand"><div class="brandmark" aria-hidden="true">⌁</div><div><h1>SkyGuard AI</h1><p>Explainable anomaly intelligence for Automatic Weather Stations</p></div><div class="realtime"><b id="clock">--:--:--</b><small>LOCAL REAL TIME</small></div></div>
+    <div class="live"><i class="pulse"></i><span>LIVE · AWS NETWORK</span></div>
+  </header>
+
+  <nav class="scenario-row" aria-label="Simulation scenarios">
+    <button class="scenario active" data-mode="normal"><div class="icon">✓</div><strong>Normal</strong><small>Healthy baseline</small></button>
+    <button class="scenario" data-mode="frozen"><div class="icon">❄</div><strong>Frozen</strong><small>Sensor fault</small></button>
+    <button class="scenario" data-mode="spike"><div class="icon">ϟ</div><strong>Spike</strong><small>Calibration fault</small></button>
+    <button class="scenario" data-mode="storm"><div class="icon">☂</div><strong>Storm</strong><small>Weather event</small></button>
+    <button class="scenario" data-mode="flood"><div class="icon">≋</div><strong>Flood</strong><small>Weather event</small></button>
+  </nav>
+
+  <div class="grid">
+    <section>
+      <article class="card graph-card">
+        <div class="card-head"><div><div class="eyebrow" id="stationEyebrow">AWS-UK-042 · Dehradun</div><h2>Live multivariate telemetry</h2></div><div class="head-actions"><select class="station-select" id="stationSelect" aria-label="Weather station"></select><label class="pace-wrap" id="paceWrap">Graph pace <select id="pace"><option value="5">5 min / sec</option><option value="1440">1 day / sec</option></select></label><button class="ghost" id="pauseBtn">Pause</button><button class="primary" id="showAnomaly">Show Anomaly</button></div></div>
+        <div class="legend"><span><i class="dot" style="--c:var(--temp)"></i>Temperature °C</span><span><i class="dot" style="--c:var(--press)"></i>Pressure hPa</span><span><i class="dot" style="--c:var(--humid)"></i>Humidity %</span></div>
+        <div class="chart-wrap"><canvas id="chart"></canvas><div class="chart-overlay" id="chartMeta">15-minute sample-and-hold · 5 simulated minutes / second</div></div>
+      </article>
+
+      <div class="subgrid">
+        <article class="card map-card"><div class="eyebrow">India AWS network</div><h2>Station locations</h2><div class="mapbox">
+          <svg class="india-map" viewBox="0 0 667 777" role="img" aria-label="Accurate outline map of India with seven simulated weather stations">
+            <image class="boundary-art" href="https://upload.wikimedia.org/wikipedia/commons/b/b4/India_outline.svg" x="0" y="0" width="667" height="777" preserveAspectRatio="xMidYMid meet"/>
+            <g class="station-pin active" data-station="UK" transform="translate(234 183)"><title>Uttarakhand — Dehradun</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">UK</text></g>
+            <g class="station-pin" data-station="RJ" transform="translate(186 270)"><title>Rajasthan — Jaipur</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">RJ</text></g>
+            <g class="station-pin" data-station="KL" transform="translate(211 718)"><title>Kerala — Thiruvananthapuram</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">KL</text></g>
+            <g class="station-pin" data-station="DL" transform="translate(216 226)"><title>Delhi — New Delhi</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" x="-24" y="5">DL</text></g>
+            <g class="station-pin" data-station="MP" transform="translate(221 363)"><title>Madhya Pradesh — Bhopal</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">MP</text></g>
+            <g class="station-pin" data-station="BR" transform="translate(386 303)"><title>Bihar — Patna</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">BR</text></g>
+            <g class="station-pin" data-station="AS" transform="translate(526 290)"><title>Assam — Guwahati</title><line class="stem" y1="8" y2="24"/><circle class="ring" r="10"/><circle fill="#07101f" r="3"/><text class="pin-label" y="43">AS</text></g>
+          </svg>
+        </div><div class="map-note">Markers use geographic station coordinates · click to change station · outline: <a href="https://commons.wikimedia.org/wiki/File:India_outline.svg" target="_blank" rel="noopener">Wikimedia Commons, CC BY-SA 3.0</a></div></article>
+
+        <article class="card health-card"><div class="eyebrow">Maintenance overview</div><h2>Station health heatmap</h2><div class="heatmap" id="heatmap"></div><div class="health-note">Health combines anomaly frequency, severity, signal drift and data availability. Scores under 70% require maintenance review.</div></article>
+      </div>
+    </section>
+
+    <aside class="card intel">
+      <div class="status-line"><div><div class="eyebrow">Active assessment</div><h2 class="intel-title" id="intelTitle">Normal</h2></div><span class="badge" id="badge" style="--status:#50d890">Healthy</span></div>
+      <div class="subtitle" id="subtitle">Normal observation · no anomaly detected</div>
+      <div class="section"><div class="section-title">Root-cause analysis</div><div class="rca" id="rca">All three signals remain within learned baseline ranges and maintain plausible multivariate relationships.</div><div class="signal-list" id="signals"></div></div>
+      <div class="section metrics"><div class="metric"><small>Confidence</small><strong id="confidence">96%</strong><span>classification certainty</span></div><div class="metric"><small>Support value</small><strong id="support">3/3</strong><span>aligned indicators</span></div></div>
+      <div class="section"><div class="section-title">Sensor health</div><strong id="healthValue">94%</strong><div class="health-meter"><div id="healthBar" style="--health:94%;--health-color:#50d890"></div></div><div class="reason" id="healthReason">Stable readings with low residual error and no recent severe anomalies.</div></div>
+      <div class="section"><div class="section-title">Health prediction</div><div class="metrics"><div class="metric"><small>7-day forecast</small><strong id="prediction">92%</strong><span>expected health</span></div><div class="metric"><small>Severity</small><strong id="severity">None</strong><span>current incident</span></div></div><button class="primary alert-btn" id="alertBtn">Send alert to maintenance crew</button></div>
+      <div class="section"><div class="section-title">Optional corrected estimate</div><div class="corrected"><div class="reason" id="correctedReason">No correction required; observed values are considered trustworthy.</div><div class="corrected-grid"><div><small>Temp</small><b id="cTemp">24.0 °C</b></div><div><small>Pressure</small><b id="cPress">1008 hPa</b></div><div><small>Humidity</small><b id="cHumid">58%</b></div></div></div><div class="disclaimer">Estimated values support human review and never silently replace raw AWS observations.</div></div>
+    </aside>
+  </div>
+</main>
+
+<div class="modal" id="modal"><div class="modal-box"><div class="modal-head"><div><div class="eyebrow">Preserved incident evidence</div><h3 id="snapshotTitle">Anomaly snapshot</h3></div><button class="close" id="closeModal" aria-label="Close">×</button></div><canvas id="snapshot" width="1200" height="550"></canvas><div class="modal-actions"><button class="ghost" id="closeModal2">Close</button><button class="primary" id="download">Download PNG</button></div></div></div>
+<div class="toast" id="toast">Maintenance alert sent with station ID and anomaly evidence.</div>
+
+<script>
+  const FAULT_COLOR='#ffbd59', WEATHER_COLOR='#4c8dff';
+  const scenarios={
+    normal:{title:'Normal',badge:'Healthy',color:'#50d890',subtitle:'Normal observation · no anomaly detected',rca:'All three signals remain within the regional baseline and retain plausible multivariate relationships.',confidence:96,support:'3/3',health:94,prediction:92,severity:'None',reason:'Stable 15-minute observations with low residual error and no recent severe anomalies.',corrected:'No correction required; observed values are considered trustworthy.'},
+    frozen:{title:'Frozen',badge:'Sensor fault',color:FAULT_COLOR,subtitle:'Persistent-value anomaly · sensor fault',rca:'One or more channels have repeated an identical value beyond the persistence limit while the remaining channels continue to update.',confidence:98,support:'3/4',health:62,prediction:54,severity:'High',reason:'Lost variance in the frozen channel indicates a likely sensor, logger or interface fault.',corrected:'Estimated from the healthy channels and this station’s regional baseline.'},
+    spike:{title:'Spike',badge:'Sensor fault',color:FAULT_COLOR,subtitle:'Abrupt deviation · calibration fault',rca:'A sensor shows unsupported high-amplitude jumps that violate its rate-of-change limit. Likely calibration drift or intermittent electrical noise.',confidence:93,support:'3/4',health:68,prediction:61,severity:'High',reason:'Multiple abrupt residuals suggest unstable calibration; health is below the maintenance threshold.',corrected:'Median-filter estimate suppresses isolated spikes while preserving the raw record.'},
+    storm:{title:'Storm',badge:'Weather event',color:WEATHER_COLOR,subtitle:'Multivariate meteorological anomaly',rca:'Temperature and pressure fall together while humidity rises toward saturation. The gradual, coordinated three-signal transition supports a genuine storm event.',confidence:91,support:'4/5',health:88,prediction:86,severity:'Severe',reason:'Sensors remain mutually coherent during an extreme event; no persistent hardware-fault signature is present.',corrected:'No automatic correction: coordinated signals indicate plausible severe weather.'},
+    flood:{title:'Flood',badge:'Weather event',color:WEATHER_COLOR,subtitle:'Persistent saturation · weather event',rca:'Humidity remains between 90–100% over an extended period, temperature is about 10% below its regional baseline and pressure stays roughly 3% lower.',confidence:89,support:'4/5',health:82,prediction:78,severity:'Critical',reason:'High humidity exposure is prolonged; sensor response remains coherent but degradation risk is elevated.',corrected:'No automatic correction; flag for human validation and optional nearby-station comparison.'}
+  };
+  const stations=[
+    {key:'UK',state:'Uttarakhand',city:'Dehradun',code:'AWS-UK-042',temp:24,pressure:1008,humidity:58,amp:3.8,health:94},
+    {key:'RJ',state:'Rajasthan',city:'Jaipur',code:'AWS-RJ-017',temp:32,pressure:1003,humidity:34,amp:6.2,health:91},
+    {key:'KL',state:'Kerala',city:'Thiruvananthapuram',code:'AWS-KL-008',temp:28,pressure:1009,humidity:79,amp:2.1,health:89},
+    {key:'DL',state:'Delhi',city:'New Delhi',code:'AWS-DL-011',temp:30,pressure:1005,humidity:48,amp:5.4,health:86},
+    {key:'MP',state:'Madhya Pradesh',city:'Bhopal',code:'AWS-MP-024',temp:28,pressure:1006,humidity:55,amp:4.7,health:90},
+    {key:'BR',state:'Bihar',city:'Patna',code:'AWS-BR-019',temp:29,pressure:1007,humidity:69,amp:4.0,health:84},
+    {key:'AS',state:'Assam',city:'Guwahati',code:'AWS-AS-006',temp:26,pressure:1008,humidity:77,amp:2.8,health:88}
+  ];
+  const freezeSets=[['temp'],['pressure'],['humidity'],['temp','pressure'],['temp','humidity'],['pressure','humidity'],['temp','pressure','humidity']];
+  const sensorNames={temp:'temperature',pressure:'pressure',humidity:'humidity'};
+  const colors={temp:'#ff5f6d',pressure:'#50d890',humidity:'#4c8dff'};
+  const canvas=document.querySelector('#chart');
+  let stationKey='UK',mode='normal',paused=false,pace=5,phase=0,last=performance.now(),simTime=new Date(),data=[],incidentArchive=[],latestSnapshot=null;
+  let heldNormal=null,nextNormalSample=0,frozenSensors=[],frozenValues={},spikeSensor='pressure',alertTimer=null;
+  const rand=(a,b)=>a+Math.random()*(b-a),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const station=()=>stations.find(s=>s.key===stationKey);
+  const titleCase=s=>s.charAt(0).toUpperCase()+s.slice(1);
+  function regionalPoint(time,seed=0){
+    const s=station(),hours=time.getHours()+time.getMinutes()/60,diurnal=Math.sin((hours-6)/24*Math.PI*2),slow=Math.sin(seed/17);
+    return {time:new Date(time),temp:s.temp+diurnal*s.amp+slow*.35+rand(-.12,.12),pressure:s.pressure+Math.sin(seed/23)*1.2+rand(-.18,.18),humidity:clamp(s.humidity-diurnal*(s.key==='RJ'?9:5)-slow*1.4+rand(-.5,.5),8,98)};
+  }
+  function normalPoint(time){
+    if(!heldNormal||time.getTime()>=nextNormalSample){const sample=regionalPoint(time,Math.floor(time.getTime()/900000));heldNormal={temp:sample.temp,pressure:sample.pressure,humidity:sample.humidity};nextNormalSample=(Math.floor(time.getTime()/900000)+1)*900000;}
+    return {time:new Date(time),...heldNormal};
+  }
+  function anomalyPoint(){
+    phase++;const s=station(),p=regionalPoint(simTime,phase);
+    if(mode==='frozen')frozenSensors.forEach(k=>p[k]=frozenValues[k]);
+    if(mode==='spike'&&(phase%9===0||phase%9===1)){const amount=spikeSensor==='temp'?rand(7,11):spikeSensor==='pressure'?rand(18,28):rand(25,38);p[spikeSensor]+=phase%2?amount:-amount*.8;}
+    if(mode==='storm'){
+      const q=clamp(phase/40,0,1),recovery=phase>90?clamp((phase-90)/40,0,1):0;
+      p.temp*=1-.15*q+.08*recovery;p.pressure*=1-.07*q+.04*recovery;
+      if(phase<40)p.humidity=clamp(s.humidity*(1+.30*q),0,95);else if(phase<90)p.humidity=95;else p.humidity=95*(1-.30*recovery);
+    }
+    if(mode==='flood'){const q=clamp(phase/28,0,1);p.temp*=1-.10*q;p.pressure*=1-.03*q;p.humidity=clamp(95+Math.sin(phase/7)*3.5+rand(-1,1),90,100);}
+    return p;
+  }
+  function reset(m){
+    if(alertTimer){clearTimeout(alertTimer);alertTimer=null;}mode=m;phase=0;pace=5;data=[];heldNormal=null;nextNormalSample=0;
+    const end=new Date(),start=new Date(end.getTime()-119*60000);for(let i=0;i<120;i++){simTime=new Date(start.getTime()+i*60000);data.push(normalPoint(simTime));}simTime=end;
+    frozenSensors=m==='frozen'?freezeSets[Math.floor(Math.random()*freezeSets.length)]:[];frozenValues={...data.at(-1)};spikeSensor=['temp','pressure','humidity'][Math.floor(Math.random()*3)];
+    incidentArchive=m==='normal'?[]:data.slice(-15).map(d=>({...d,time:new Date(d.time)}));
+    document.querySelector('#pace').value='5';document.querySelector('#paceWrap').classList.toggle('show',m==='flood');document.querySelectorAll('.scenario').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+    const btn=document.querySelector('#alertBtn');btn.classList.remove('sent','sending');btn.disabled=false;btn.textContent='Send alert to maintenance crew';
+    updateStationUI();updateIntel();updateChartMeta();
+  }
+  function updateStationUI(){
+    const s=station();document.querySelector('#stationEyebrow').textContent=`${s.code} · ${s.city}, ${s.state}`;document.querySelector('#stationSelect').value=s.key;
+    document.querySelectorAll('.station-pin').forEach(p=>p.classList.toggle('active',p.dataset.station===s.key));
+  }
+  function updateChartMeta(){document.querySelector('#chartMeta').textContent=pace===1440?'1 simulated day / second · one-minute anomaly model aggregated for overview':mode==='normal'?'15-minute sample-and-hold · 5 simulated minutes / second':'1-minute anomaly pulses · 5 simulated minutes / second';}
+  function sizeCanvas(c){const dpr=Math.min(devicePixelRatio||1,2),r=c.getBoundingClientRect();if(c.width!==Math.round(r.width*dpr)||c.height!==Math.round(r.height*dpr)){c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);}return dpr;}
+  function drawGraph(target,snapshotData=data){
+    const c=target,g=c.getContext('2d'),dpr=target===canvas?sizeCanvas(c):1,W=c.width,H=c.height;g.clearRect(0,0,W,H);g.save();g.scale(dpr,dpr);
+    const w=W/dpr,h=H/dpr,L=102,R=18,T=16,B=42,plotW=w-L-R,laneH=(h-T-B)/3;g.fillStyle='#07121f';g.fillRect(0,0,w,h);
+    const keys=['temp','pressure','humidity'],ranges={};keys.forEach(k=>{const vals=snapshotData.map(d=>d[k]),rawMin=Math.min(...vals),rawMax=Math.max(...vals),pad=Math.max((rawMax-rawMin)*.17,k==='temp'?1:k==='pressure'?2:3);ranges[k]=[k==='humidity'?Math.max(0,rawMin-pad):rawMin-pad,k==='humidity'?Math.min(100,rawMax+pad):rawMax+pad];});
+    const labels={temp:'TEMPERATURE °C',pressure:'PRESSURE hPa',humidity:'HUMIDITY %'};
+    keys.forEach((key,li)=>{
+      const y0=T+li*laneH,[mn,mx]=ranges[key];g.strokeStyle='#18304a';g.lineWidth=1;for(let j=0;j<=3;j++){const y=y0+j*laneH/3;g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();}
+      g.fillStyle=colors[key];g.font='700 9px system-ui';g.textAlign='left';g.fillText(labels[key],8,y0+13);g.fillStyle='#7890aa';g.font='9px system-ui';g.textAlign='right';g.fillText(mx.toFixed(key==='pressure'?0:1),L-9,y0+30);g.fillText(mn.toFixed(key==='pressure'?0:1),L-9,y0+laneH-8);
+      g.strokeStyle=colors[key];g.lineWidth=2;g.shadowColor=colors[key];g.shadowBlur=6;g.beginPath();let previousY=null;snapshotData.forEach((d,i)=>{const x=L+i/Math.max(1,snapshotData.length-1)*plotW,y=y0+7+(1-(d[key]-mn)/(mx-mn||1))*(laneH-14);if(!i)g.moveTo(x,y);else if(mode==='normal'){g.lineTo(x,previousY);g.lineTo(x,y);}else g.lineTo(x,y);previousY=y;});g.stroke();g.shadowBlur=0;
+    });
+    const minutePulses=mode!=='normal'&&pace===5,tickCount=minutePulses?Math.min(60,snapshotData.length-1):8;g.textAlign='center';for(let j=0;j<=tickCount;j++){const x=L+j/tickCount*plotW,idx=Math.round(j/tickCount*(snapshotData.length-1)),dt=snapshotData[idx]?.time||new Date(),major=!minutePulses||j%5===0;g.strokeStyle=major?'#46617d':'#263d56';g.beginPath();g.moveTo(x,h-B);g.lineTo(x,h-B+(major?8:4));g.stroke();if(major){g.fillStyle='#70859e';g.font='9px system-ui';const label=pace===1440?dt.toLocaleDateString(undefined,{day:'2-digit',month:'short'}):dt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});g.fillText(label,x,h-15);}}g.restore();
+  }
+  function frame(now){
+    if(!paused&&now-last>=190){const elapsed=(now-last)/1000;last=now;simTime=new Date(simTime.getTime()+pace*60000*elapsed);const point=mode==='normal'?normalPoint(simTime):anomalyPoint();data.push(point);if(mode!=='normal'&&incidentArchive.length<140)incidentArchive.push({...point,time:new Date(point.time)});const limit=mode==='normal'?120:60;while(data.length>limit)data.shift();}drawGraph(canvas);requestAnimationFrame(frame);
+  }
+  function updateIntel(){
+    const s={...scenarios[mode]},site=station();if(mode==='normal'){s.health=site.health;s.prediction=Math.max(72,site.health-2);}if(mode==='frozen'){const names=frozenSensors.map(k=>sensorNames[k]);const joined=names.length===1?names[0]:names.length===2?`${names[0]} and ${names[1]}`:`${names[0]}, ${names[1]} and ${names[2]}`;s.rca=`The ${joined} ${names.length===1?'channel has':'channels have'} repeated an identical value beyond the persistence limit while ${names.length===3?'the station remains connected':'unaffected channels continue to update'}. This pattern indicates a sensor or logger freeze.`;}
+    [['intelTitle',s.title],['subtitle',`${s.subtitle} · ${site.key}`],['rca',s.rca],['confidence',s.confidence+'%'],['support',s.support],['healthValue',s.health+'%'],['healthReason',s.reason],['prediction',s.prediction+'%'],['severity',s.severity],['correctedReason',s.corrected]].forEach(([id,v])=>document.getElementById(id).textContent=v);
+    const badge=document.querySelector('#badge');badge.textContent=s.badge;badge.style.setProperty('--status',s.color);const healthColor=s.health<=70?'#ff5c74':s.health<85?FAULT_COLOR:'#50d890',hb=document.querySelector('#healthBar');hb.style.setProperty('--health',s.health+'%');hb.style.setProperty('--health-color',healthColor);document.querySelector('#alertBtn').classList.toggle('show',s.health<=70);
+    const sig={normal:[['Sampling cadence','15 minutes'],['Range check','Pass'],['Cross-signal consistency','Pass']],frozen:[['Frozen channels',frozenSensors.map(titleCase).join(' + ')],['Persistence rule','Failed'],['Variance','0.00']],spike:[['Affected channel',titleCase(spikeSensor)],['Rate-of-change','Failed'],['Isolation score','0.91']],storm:[['Pressure trend','−7%'],['Temperature trend','−15%'],['Humidity peak','95%']],flood:[['Humidity persistence','90–100%'],['Temperature trend','−10%'],['Pressure trend','−3%']]}[mode];document.querySelector('#signals').innerHTML=sig.map(x=>`<div class="signal"><span>${x[0]}</span><b style="color:${s.color}">${x[1]}</b></div>`).join('');
+    const latest=data.at(-1)||regionalPoint(new Date());document.querySelector('#cTemp').textContent=(mode==='frozen'||mode==='spike'?site.temp:latest.temp.toFixed(1))+' °C';document.querySelector('#cPress').textContent=(mode==='frozen'||mode==='spike'?site.pressure:Math.round(latest.pressure))+' hPa';document.querySelector('#cHumid').textContent=(mode==='frozen'||mode==='spike'?site.humidity:Math.round(latest.humidity))+'%';
+  }
+  function renderHeat(){document.querySelector('#heatmap').innerHTML=stations.map(s=>{let adjusted=s.health;if(s.key===stationKey&&mode==='frozen')adjusted=62;if(s.key===stationKey&&mode==='spike')adjusted=68;if(s.key===stationKey&&mode==='flood')adjusted=Math.max(72,s.health-7);const col=adjusted<=70?'#ff5c74':adjusted<85?FAULT_COLOR:'#50d890';return `<div class="station-row"><span class="name">${s.key} · ${s.city}</span><div class="bar"><div class="fill" style="--w:${adjusted}%;--col:${col}"></div></div><span class="pct">${adjusted}%</span></div>`;}).join('');}
+  function chooseStation(key){stationKey=key;reset(mode);renderHeat();}
+  const stationSelect=document.querySelector('#stationSelect');stationSelect.innerHTML=stations.map(s=>`<option value="${s.key}">${s.key} · ${s.city}</option>`).join('');stationSelect.onchange=e=>chooseStation(e.target.value);document.querySelectorAll('.station-pin').forEach(p=>p.onclick=()=>chooseStation(p.dataset.station));
+  document.querySelectorAll('.scenario').forEach(b=>b.onclick=()=>{reset(b.dataset.mode);renderHeat();});document.querySelector('#pace').onchange=e=>{pace=+e.target.value;updateChartMeta();};document.querySelector('#pauseBtn').onclick=e=>{paused=!paused;e.target.textContent=paused?'Resume':'Pause';last=performance.now();};
+  function capture(){const source=incidentArchive.length>24?incidentArchive:data;latestSnapshot=source.map(d=>({...d,time:new Date(d.time)}));drawGraph(document.querySelector('#snapshot'),latestSnapshot);const s=station();document.querySelector('#snapshotTitle').textContent=`${scenarios[mode].title} · ${s.code} · ${new Date().toLocaleString()} · preserved window`;document.querySelector('#modal').classList.add('open');}
+  document.querySelector('#showAnomaly').onclick=capture;function close(){document.querySelector('#modal').classList.remove('open');}document.querySelector('#closeModal').onclick=close;document.querySelector('#closeModal2').onclick=close;document.querySelector('#modal').onclick=e=>{if(e.target.id==='modal')close();};document.querySelector('#download').onclick=()=>{const a=document.createElement('a'),s=station();a.download=`SkyGuard_${mode}_${s.code}_${Date.now()}.png`;a.href=document.querySelector('#snapshot').toDataURL('image/png');a.click();};
+  document.querySelector('#alertBtn').onclick=e=>{
+    if(e.target.classList.contains('sending'))return;const alertedMode=mode,ticket='MNT-'+Math.floor(1000+Math.random()*9000),delay=Math.floor(rand(5000,10001));e.target.classList.add('sending');e.target.disabled=true;e.target.textContent=`Alert queued · response in ${Math.ceil(delay/1000)}s`;
+    const toast=document.querySelector('#toast');toast.textContent=`Maintenance alert ${ticket} sent for ${station().code}.`;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3500);
+    alertTimer=setTimeout(()=>{alertTimer=null;e.target.classList.remove('sending');e.target.classList.add('sent');e.target.textContent=`Maintenance acknowledged · ${ticket}`;if(alertedMode==='frozen'&&mode==='frozen'){setTimeout(()=>{reset('normal');renderHeat();},1100);}},delay);
+  };
+  function updateClock(){const now=new Date();document.querySelector('#clock').textContent=`${now.toLocaleDateString(undefined,{day:'2-digit',month:'short'})} · ${now.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;}
+  setInterval(updateClock,250);updateClock();reset('normal');renderHeat();requestAnimationFrame(frame);window.addEventListener('resize',()=>drawGraph(canvas));setInterval(updateIntel,3000);
+</script>
+</body>
+</html>
