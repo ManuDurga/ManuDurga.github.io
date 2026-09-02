@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParliamentOS — Decision Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PARLIAMENTOS — DESIGN TOKENS
+   ============================================================ */
+:root{
+  /* Base surfaces */
+  --base-0:#EDF1F8;
+  --base-1:#E4EAF4;
+  --grid-line: rgba(15,42,92,0.05);
+
+  /* Navy / ink */
+  --navy-950:#0A1B33;
+  --navy-900:#0F2447;
+  --navy-800:#16305E;
+  --navy-700:#1E3E77;
+
+  /* Blue accent */
+  --blue-600:#2557E8;
+  --blue-500:#3568F2;
+  --blue-400:#6C93F7;
+  --blue-100:#E4ECFD;
+
+  /* Grey / text */
+  --ink-900:#141A24;
+  --ink-700:#3B4454;
+  --ink-500:#5D6779;
+  --ink-300:#94A0B4;
+  --line-200:#D9E0EB;
+  --line-100:#E9EEF6;
+  --white:#FFFFFF;
+
+  /* Signal colors */
+  --signal-green:#189A72;
+  --signal-green-bg:#E4F5EE;
+  --signal-amber:#C97F17;
+  --signal-amber-bg:#FBF0DD;
+  --signal-red:#D14343;
+  --signal-red-bg:#FBE7E7;
+
+  /* Glass */
+  --glass-fill: rgba(255,255,255,0.62);
+  --glass-fill-strong: rgba(255,255,255,0.82);
+  --glass-border: rgba(255,255,255,0.75);
+  --glass-shadow: 0 1px 2px rgba(15,35,75,0.04), 0 8px 24px -8px rgba(15,35,75,0.12);
+
+  /* Type */
+  --f-display:'Space Grotesk', sans-serif;
+  --f-body:'IBM Plex Sans', sans-serif;
+  --f-mono:'IBM Plex Mono', monospace;
+
+  --radius-lg:20px;
+  --radius-md:14px;
+  --radius-sm:9px;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--f-body);
+  color:var(--ink-900);
+  background:
+    radial-gradient(1200px 700px at 85% -10%, rgba(53,104,242,0.10), transparent 60%),
+    radial-gradient(900px 600px at -5% 20%, rgba(53,104,242,0.06), transparent 55%),
+    var(--base-0);
+  background-attachment:fixed;
+  min-height:100vh;
+  overflow-x:hidden;
+  font-size:14px;
+  line-height:1.45;
+}
+
+/* faint constitution-grid texture, signature background device */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 42px 42px;
+  pointer-events:none;
+  z-index:0;
+  mask-image: radial-gradient(1000px 700px at 60% 0%, black, transparent 75%);
+}
+
+button{font-family:inherit; cursor:pointer;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:rgba(20,45,90,0.18); border-radius:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+a{color:inherit; text-decoration:none;}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app{
+  position:relative; z-index:1;
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  min-height:100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  background: linear-gradient(190deg, var(--navy-950), var(--navy-900) 60%, var(--navy-800));
+  color:#DCE6FA;
+  padding:22px 16px;
+  display:flex; flex-direction:column;
+  gap:26px;
+  position:sticky; top:0; height:100vh;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:2px 6px;}
+.brand-mark{
+  width:34px; height:34px; border-radius:9px;
+  background:linear-gradient(145deg, var(--blue-500), var(--navy-700));
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-display); font-weight:700; color:#fff; font-size:15px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  flex-shrink:0;
+}
+.brand-text{display:flex; flex-direction:column; line-height:1.15;}
+.brand-text b{font-family:var(--f-display); font-size:15.5px; letter-spacing:0.2px; color:#fff;}
+.brand-text span{font-family:var(--f-mono); font-size:10px; color:#7E97C4; letter-spacing:0.6px; text-transform:uppercase;}
+
+.nav-section-label{
+  font-family:var(--f-mono); font-size:10px; letter-spacing:1.4px; text-transform:uppercase;
+  color:#5E7BAD; padding:0 10px; margin-bottom:2px;
+}
+.nav{display:flex; flex-direction:column; gap:3px;}
+.nav-item{
+  display:flex; align-items:center; gap:11px;
+  padding:10px 12px; border-radius:11px;
+  color:#B7C7E6; font-size:13.5px; font-weight:500;
+  border:1px solid transparent;
+  transition:background .15s ease, color .15s ease;
+  background:none;
+  width:100%; text-align:left;
+}
+.nav-item .ic{width:18px; height:18px; flex-shrink:0; opacity:0.85;}
+.nav-item:hover{background:rgba(255,255,255,0.06); color:#fff;}
+.nav-item.active{
+  background:linear-gradient(90deg, rgba(53,104,242,0.35), rgba(53,104,242,0.12));
+  color:#fff;
+  border-color:rgba(108,147,247,0.35);
+  box-shadow: inset 0 0 0 1px rgba(108,147,247,0.15);
+}
+.nav-item.active .ic{opacity:1;}
+
+.sidebar-foot{margin-top:auto; display:flex; flex-direction:column; gap:10px;}
+.ai-status-chip{
+  display:flex; align-items:center; gap:8px;
+  background:rgba(24,154,114,0.14);
+  border:1px solid rgba(24,154,114,0.35);
+  padding:9px 12px; border-radius:11px;
+  font-family:var(--f-mono); font-size:11px; color:#7CE0BB;
+}
+.pulse-dot{width:7px; height:7px; border-radius:50%; background:#26D492; box-shadow:0 0 0 0 rgba(38,212,146,0.6); animation:pulse 2s infinite;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(38,212,146,0.55);}
+  70%{box-shadow:0 0 0 7px rgba(38,212,146,0);}
+  100%{box-shadow:0 0 0 0 rgba(38,212,146,0);}
+}
+.session-card{
+  display:flex; align-items:center; gap:9px;
+  padding:9px 10px; border-radius:11px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+}
+.avatar-sq{width:28px; height:28px; border-radius:8px; background:linear-gradient(145deg,#6C93F7,#2557E8); flex-shrink:0;}
+.session-card div b{display:block; font-size:12.5px; color:#EAF0FC; font-weight:600;}
+.session-card div span{font-size:10.5px; color:#7E97C4;}
+
+/* ---------- Main column ---------- */
+.main{display:flex; flex-direction:column; min-height:100vh;}
+
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:16px;
+  padding:14px 28px;
+  background:var(--glass-fill-strong);
+  backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line-100);
+}
+.page-title-block{display:flex; flex-direction:column; margin-right:auto;}
+.page-eyebrow{font-family:var(--f-mono); font-size:10.5px; letter-spacing:1.2px; text-transform:uppercase; color:var(--blue-600); font-weight:600;}
+.page-title{font-family:var(--f-display); font-size:19px; font-weight:600; color:var(--navy-950); letter-spacing:0.1px;}
+
+.search-box{
+  display:flex; align-items:center; gap:8px;
+  background:var(--white); border:1px solid var(--line-200);
+  border-radius:11px; padding:9px 14px; width:300px;
+  color:var(--ink-500); font-size:12.5px;
+}
+.search-box svg{flex-shrink:0; opacity:0.55;}
+.search-box .kbd{margin-left:auto; font-family:var(--f-mono); font-size:10px; background:var(--base-1); border:1px solid var(--line-200); border-radius:5px; padding:2px 6px; color:var(--ink-500);}
+
+.icon-btn{
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--white); border:1px solid var(--line-200); color:var(--ink-700);
+  position:relative;
+}
+.icon-btn:hover{border-color:var(--blue-400);}
+.icon-btn .dot{position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%; background:var(--signal-red); border:1.5px solid var(--white);}
+
+.profile-chip{
+  display:flex; align-items:center; gap:9px; padding:5px 12px 5px 5px;
+  border:1px solid var(--line-200); border-radius:12px; background:var(--white);
+}
+.profile-chip .av{width:26px; height:26px; border-radius:8px; background:linear-gradient(145deg,#3568F2,#16305E);}
+.profile-chip div{display:flex; flex-direction:column; line-height:1.1;}
+.profile-chip b{font-size:12px; color:var(--navy-950);}
+.profile-chip span{font-size:10.5px; color:var(--ink-500);}
+
+.content{padding:26px 28px 60px; flex:1;}
+
+/* page visibility */
+.page{display:none; animation:fadein .35s ease;}
+.page.active{display:block;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+
+/* Glass card */
+.card{
+  background:var(--glass-fill);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--glass-shadow);
+  padding:20px;
+}
+.card-solid{background:var(--white); border:1px solid var(--line-100);}
+.card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px;}
+.card-head h3{font-family:var(--f-display); font-size:14.5px; font-weight:600; color:var(--navy-950);}
+.card-head .sub{font-size:11.5px; color:var(--ink-500); margin-top:2px;}
+.card-eyebrow{font-family:var(--f-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--blue-600); font-weight:600; margin-bottom:4px; display:block;}
+
+/* Grid helpers */
+.grid{display:grid; gap:18px;}
+.g-12{grid-template-columns:repeat(12,1fr);}
+.c-3{grid-column:span 3;} .c-4{grid-column:span 4;} .c-5{grid-column:span 5;}
+.c-6{grid-column:span 6;} .c-7{grid-column:span 7;} .c-8{grid-column:span 8;}
+.c-9{grid-column:span 9;} .c-12{grid-column:span 12;}
+.stack{display:flex; flex-direction:column;}
+.row{display:flex; align-items:center;}
+.between{justify-content:space-between;}
+.gap-6{gap:6px;} .gap-8{gap:8px;} .gap-10{gap:10px;} .gap-14{gap:14px;} .gap-18{gap:18px;}
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:var(--f-body); font-weight:600; font-size:12.5px;
+  padding:11px 18px; border-radius:11px; border:1px solid transparent;
+  transition:transform .1s ease, box-shadow .15s ease;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:linear-gradient(135deg, var(--blue-500), var(--blue-600)); color:#fff; box-shadow:0 6px 16px -6px rgba(37,87,232,0.55);}
+.btn-primary:hover{box-shadow:0 8px 20px -6px rgba(37,87,232,0.65);}
+.btn-secondary{background:var(--white); color:var(--navy-900); border-color:var(--line-200);}
+.btn-secondary:hover{border-color:var(--blue-400); color:var(--blue-600);}
+.btn-dark{background:var(--navy-950); color:#fff;}
+.btn-ghost{background:transparent; color:var(--ink-500); border-color:transparent;}
+.btn-ghost:hover{color:var(--navy-950);}
+.btn-sm{padding:7px 12px; font-size:11.5px; border-radius:9px;}
+.btn-block{width:100%;}
+
+/* Badges / pills */
+.badge{
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--f-mono); font-size:10.5px; font-weight:600; letter-spacing:0.3px;
+  padding:4px 9px; border-radius:20px;
+}
+.badge-green{background:var(--signal-green-bg); color:var(--signal-green);}
+.badge-amber{background:var(--signal-amber-bg); color:var(--signal-amber);}
+.badge-red{background:var(--signal-red-bg); color:var(--signal-red);}
+.badge-blue{background:var(--blue-100); color:var(--blue-600);}
+.badge-grey{background:var(--base-1); color:var(--ink-500);}
+.dot-sm{width:6px; height:6px; border-radius:50%; background:currentColor;}
+
+/* Progress bars */
+.pbar{height:8px; border-radius:20px; background:var(--line-100); overflow:hidden; position:relative;}
+.pbar > i{display:block; height:100%; border-radius:20px; background:linear-gradient(90deg, var(--blue-400), var(--blue-600));}
+.pbar.green > i{background:linear-gradient(90deg,#59C9A5,var(--signal-green));}
+.pbar.amber > i{background:linear-gradient(90deg,#F0C36D,var(--signal-amber));}
+.pbar.red > i{background:linear-gradient(90deg,#EB8B8B,var(--signal-red));}
+.pbar-thin{height:5px;}
+
+/* Stat number */
+.stat-num{font-family:var(--f-display); font-weight:700; color:var(--navy-950); line-height:1;}
+.stat-xl{font-size:42px;}
+.stat-lg{font-size:30px;}
+.stat-md{font-size:22px;}
+.stat-label{font-size:11.5px; color:var(--ink-500); margin-top:6px;}
+.trend-up{color:var(--signal-green); font-family:var(--f-mono); font-size:11px; font-weight:600;}
+.trend-down{color:var(--signal-red); font-family:var(--f-mono); font-size:11px; font-weight:600;}
+
+/* Divider */
+.hr{height:1px; background:var(--line-100); border:none; margin:14px 0;}
+
+/* List rows */
+.list-row{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 4px; border-bottom:1px solid var(--line-100);
+}
+.list-row:last-child{border-bottom:none;}
+.rank-chip{
+  width:26px; height:26px; border-radius:8px; flex-shrink:0;
+  background:var(--base-1); color:var(--navy-900);
+  font-family:var(--f-mono); font-weight:600; font-size:11.5px;
+  display:flex; align-items:center; justify-content:center;
+}
+.issue-name{font-weight:600; font-size:13px; color:var(--navy-950);}
+.issue-meta{font-size:11px; color:var(--ink-500);}
+
+/* AI panel */
+.ai-panel{
+  background:linear-gradient(160deg, rgba(37,87,232,0.07), rgba(37,87,232,0.02));
+  border:1px solid rgba(53,104,242,0.22);
+  border-radius:var(--radius-md);
+  padding:16px 18px;
+}
+.ai-panel-head{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+.ai-glyph{
+  width:22px; height:22px; border-radius:7px;
+  background:linear-gradient(135deg,var(--blue-500),var(--navy-800));
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.ai-glyph svg{width:12px; height:12px; color:#fff;}
+.ai-panel-head b{font-family:var(--f-display); font-size:12.5px; color:var(--navy-950);}
+.ai-panel p{font-size:12.5px; color:var(--ink-700); line-height:1.6;}
+.ai-reason-list{list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:4px;}
+.ai-reason-list li{display:flex; align-items:flex-start; gap:8px; font-size:12.5px; color:var(--ink-700);}
+.ai-reason-list li .chk{
+  width:16px; height:16px; border-radius:5px; background:var(--blue-100); color:var(--blue-600);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;
+}
+.ai-reason-list li .chk svg{width:10px; height:10px;}
+
+/* Tag chip */
+.tag{
+  display:inline-flex; align-items:center; font-size:11.5px; font-weight:500;
+  padding:6px 11px; border-radius:9px; background:var(--white); border:1px solid var(--line-200); color:var(--ink-700);
+}
+
+/* Hex lattice map (signature element) */
+.hexmap{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:0;}
+.hex-svg-wrap{width:100%; display:flex; justify-content:center;}
+.hex-legend{display:flex; gap:16px; justify-content:center; margin-top:10px; flex-wrap:wrap;}
+.hex-legend span{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-500);}
+.hex-legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+/* ============================================================
+   MODALS / SLIDE-OVER / TOAST / TOOLTIP / LOADING
+   ============================================================ */
+.overlay{
+  position:fixed; inset:0; background:rgba(10,27,51,0.42); backdrop-filter:blur(3px);
+  display:flex; align-items:center; justify-content:center; z-index:200;
+  opacity:0; pointer-events:none; transition:opacity .22s ease;
+}
+.overlay.open{opacity:1; pointer-events:auto;}
+.modal-box{
+  background:var(--white); border-radius:var(--radius-lg); box-shadow:0 24px 60px -20px rgba(10,27,51,0.45);
+  width:min(480px, 92vw); max-height:86vh; overflow-y:auto; padding:24px;
+  transform:translateY(14px) scale(0.98); opacity:0; transition:transform .25s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+}
+.overlay.open .modal-box{transform:translateY(0) scale(1); opacity:1;}
+.modal-box.modal-lg{width:min(620px, 92vw);}
+.modal-head{display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; gap:10px;}
+.modal-head h3{font-family:var(--f-display); font-size:16.5px; font-weight:600; color:var(--navy-950);}
+.modal-close{
+  width:28px; height:28px; border-radius:8px; border:1px solid var(--line-200); background:var(--white);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--ink-500);
+  transition:border-color .15s ease, color .15s ease;
+}
+.modal-close:hover{border-color:var(--blue-400); color:var(--blue-600);}
+.modal-close svg{width:14px; height:14px;}
+
+.vote-option{
+  display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:11px;
+  border:1.5px solid var(--line-200); cursor:pointer; margin-bottom:8px; transition:border-color .15s ease, background .15s ease;
+}
+.vote-option:hover{border-color:var(--blue-400);}
+.vote-option.selected{border-color:var(--blue-600); background:var(--blue-100);}
+.vote-option .vdot{width:16px; height:16px; border-radius:50%; border:2px solid var(--line-200); flex-shrink:0; position:relative;}
+.vote-option.selected .vdot{border-color:var(--blue-600);}
+.vote-option.selected .vdot::after{content:""; position:absolute; inset:2px; border-radius:50%; background:var(--blue-600);}
+
+/* Gov-doc styled panel for View Bill modal */
+.gov-doc{border:1px solid var(--line-200); border-radius:var(--radius-md); padding:16px 18px; background:var(--base-0);}
+.gov-doc-row{padding:9px 0; border-bottom:1px dashed var(--line-200);}
+.gov-doc-row:last-child{border-bottom:none;}
+.gov-doc-label{font-family:var(--f-mono); font-size:10px; letter-spacing:0.6px; text-transform:uppercase; color:var(--blue-600); font-weight:600; margin-bottom:3px;}
+.gov-doc-val{font-size:12.5px; color:var(--ink-900); line-height:1.55;}
+.gov-seal{
+  width:44px; height:44px; border-radius:50%; border:2px solid var(--navy-800); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-family:var(--f-mono); font-size:9px; font-weight:700; color:var(--navy-800); text-align:center;
+}
+
+/* Slide-over panel */
+.slideover-wrap{position:fixed; inset:0; z-index:210; pointer-events:none;}
+.slideover-wrap .overlay{z-index:auto; opacity:0; pointer-events:none;}
+.slideover-wrap.open .overlay{opacity:1; pointer-events:auto;}
+.slideover-wrap.open{pointer-events:auto;}
+.slideover{
+  position:absolute; top:0; right:0; height:100%; width:min(420px, 92vw);
+  background:var(--white); box-shadow:-20px 0 50px -20px rgba(10,27,51,0.35);
+  transform:translateX(100%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  overflow-y:auto; padding:22px;
+}
+.slideover-wrap.open .slideover{transform:translateX(0);}
+.slideover-section{margin-bottom:20px;}
+.slideover-section h4{font-family:var(--f-display); font-size:12.5px; font-weight:600; color:var(--navy-950); margin-bottom:8px;}
+
+/* Toast */
+.toast-stack{position:fixed; top:22px; right:22px; z-index:300; display:flex; flex-direction:column; gap:10px;}
+.toast{
+  display:flex; align-items:center; gap:10px; background:var(--navy-950); color:#fff;
+  padding:13px 18px; border-radius:12px; font-size:12.5px; font-weight:600;
+  box-shadow:0 14px 34px -10px rgba(10,27,51,0.5);
+  transform:translateX(20px); opacity:0; transition:transform .25s cubic-bezier(.2,.8,.2,1), opacity .25s ease;
+}
+.toast.show{transform:translateX(0); opacity:1;}
+.toast .tick{
+  width:18px; height:18px; border-radius:50%; background:var(--signal-green); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.toast .tick svg{width:11px; height:11px; color:#fff;}
+
+/* Tooltip */
+.tooltip-pop{
+  position:fixed; z-index:400; background:var(--navy-950); color:#fff; border-radius:11px;
+  padding:12px 14px; font-size:11.5px; width:220px; box-shadow:0 14px 34px -10px rgba(10,27,51,0.55);
+  opacity:0; transform:translateY(4px); transition:opacity .16s ease, transform .16s ease; pointer-events:none;
+}
+.tooltip-pop.show{opacity:1; transform:translateY(0);}
+.tooltip-pop b{display:block; font-family:var(--f-display); font-size:12.5px; margin-bottom:6px; color:#fff;}
+.tooltip-pop .trow{display:flex; justify-content:space-between; gap:10px; margin-bottom:4px; color:rgba(255,255,255,0.75);}
+.tooltip-pop .trow b{display:inline; font-family:var(--f-mono); font-size:11px; color:#fff; margin:0;}
+.tooltip-pop .tnote{margin-top:6px; color:rgba(255,255,255,0.85); line-height:1.45;}
+.tt-anchor{cursor:pointer;}
+
+/* Loading */
+.btn.is-loading{opacity:0.85; cursor:progress; pointer-events:none;}
+.spin-dots{display:inline-flex; gap:4px; align-items:center;}
+.spin-dots i{width:5px; height:5px; border-radius:50%; background:currentColor; animation:dotPulse 1s infinite ease-in-out;}
+.spin-dots i:nth-child(2){animation-delay:.15s;} .spin-dots i:nth-child(3){animation-delay:.3s;}
+@keyframes dotPulse{0%,80%,100%{opacity:0.25; transform:scale(0.7);} 40%{opacity:1; transform:scale(1);}}
+
+.ai-loading-panel{
+  border:1px solid rgba(53,104,242,0.22); border-radius:var(--radius-md);
+  padding:22px 18px; text-align:center; background:linear-gradient(160deg, rgba(37,87,232,0.06), rgba(37,87,232,0.01));
+}
+.ai-loading-ring{
+  width:34px; height:34px; margin:0 auto 12px; border-radius:50%;
+  border:3px solid var(--blue-100); border-top-color:var(--blue-600); animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ai-status-msg{font-size:12px; color:var(--ink-500); font-family:var(--f-mono); transition:opacity .25s ease;}
+
+.ai-result-panel{animation:aiPanelIn .4s cubic-bezier(.2,.8,.2,1);}
+@keyframes aiPanelIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+.ai-meta-row{display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid rgba(53,104,242,0.18);}
+.ai-meta-item{font-size:11px; color:var(--ink-500);}
+.ai-meta-item b{display:block; font-family:var(--f-mono); font-size:12.5px; color:var(--navy-950); margin-top:2px;}
+
+/* India state map */
+.india-map-wrap{width:100%; display:flex; justify-content:center;}
+.india-map-wrap svg{max-width:340px; width:100%; height:auto;}
+.india-state{stroke:#fff; stroke-width:0.6; transition:opacity .15s ease, stroke-width .15s ease; cursor:pointer;}
+.india-state:hover{opacity:0.82; stroke-width:1.4;}
+
+/* Tabs */
+.tabs{display:flex; gap:6px; background:var(--base-1); padding:4px; border-radius:11px; width:fit-content;}
+.tab{padding:8px 15px; border-radius:8px; font-size:12.5px; font-weight:600; color:var(--ink-500); border:none; background:none;}
+.tab.active{background:var(--white); color:var(--navy-950); box-shadow:0 2px 6px rgba(15,35,75,0.08);}
+
+/* Scenario cards */
+.scenario-card{border-radius:var(--radius-md); padding:16px; border:1px solid var(--line-200); background:var(--white);}
+.scenario-card.best{border-color:rgba(24,154,114,0.35); background:linear-gradient(160deg, rgba(24,154,114,0.06), transparent);}
+.scenario-card.worst{border-color:rgba(209,67,67,0.3); background:linear-gradient(160deg, rgba(209,67,67,0.06), transparent);}
+
+/* Gauge */
+.gauge-wrap{display:flex; flex-direction:column; align-items:center;}
+.gauge-read{font-family:var(--f-display); font-size:26px; font-weight:700; margin-top:-38px;}
+
+/* Debate specific */
+.speaker-card{display:flex; align-items:center; gap:14px;}
+.speaker-avatar{width:52px; height:52px; border-radius:14px; background:linear-gradient(145deg,#3568F2,#0F2447); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--f-display); font-weight:700; font-size:18px;}
+.timer-ring{position:relative; width:74px; height:74px; flex-shrink:0;}
+.fact-item{border-left:3px solid var(--blue-500); padding:9px 12px; background:var(--white); border-radius:0 10px 10px 0; margin-bottom:9px;}
+.fact-item.warn{border-color:var(--signal-amber);}
+.fact-item.ok{border-color:var(--signal-green);}
+.ticker{display:flex; gap:8px; overflow:hidden; white-space:nowrap; border-top:1px solid var(--line-100); border-bottom:1px solid var(--line-100); padding:8px 0;}
+.ticker-track{display:flex; gap:26px; animation:tickerScroll 22s linear infinite;}
+@keyframes tickerScroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+.ticker-item{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-700); display:flex; align-items:center; gap:6px; flex-shrink:0;}
+
+@media (max-width: 980px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .c-3,.c-4,.c-5,.c-6,.c-7,.c-8,.c-9{grid-column:span 12;}
+  .search-box{width:180px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div class="brand-text">
+        <b>ParliamentOS</b>
+        <span>Decision Intelligence</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="nav-section-label">Workflow</div>
+      <nav class="nav" id="mainNav">
+        <button class="nav-item active" data-page="dashboard">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-page="priority">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v6l4-2"/><circle cx="12" cy="13" r="9"/><path d="M12 8v5l3 3"/></svg>
+          <span>Priority Engine</span>
+        </button>
+        <button class="nav-item" data-page="pulse">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>
+          <span>Citizen Pulse</span>
+        </button>
+        <button class="nav-item" data-page="simulator">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
+          <span>Policy Simulator</span>
+        </button>
+        <button class="nav-item" data-page="debate">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-1L3 20l1-5.5a8.38 8.38 0 0 1-1-4A8.5 8.5 0 0 1 11.5 3 8.38 8.38 0 0 1 21 11.5Z"/></svg>
+          <span>Debate Intelligence</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="ai-status-chip"><span class="pulse-dot"></span> AI ENGINE — ACTIVE</div>
+      <div class="session-card">
+        <div class="avatar-sq"></div>
+        <div><b>Rep. A. Sharma</b><span>Standing Committee · Water</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title-block">
+        <span class="page-eyebrow" id="topEyebrow">Overview</span>
+        <span class="page-title" id="topTitle">ParliamentOS Dashboard</span>
+      </div>
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Search bills, issues, states…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="icon-btn tt-anchor" id="notifBtn" data-tt-notif="1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot"></span></button>
+      <button class="icon-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.7 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.36.4.66.73.86.24.14.5.22.78.24H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <div class="profile-chip">
+        <div class="av"></div>
+        <div><b>A. Sharma</b><span>MP · Lok Sabha</span></div>
+      </div>
+    </div>
+
+    <div class="content" id="pageContent">
+      <!-- PAGES INJECTED BELOW -->
+      <section class="page active" id="page-dashboard">
+        <div class="grid g-12">
+
+          <!-- Democracy Health Score -->
+          <div class="card c-4">
+            <span class="card-eyebrow">National Index</span>
+            <div class="row between" style="align-items:flex-start;">
+              <div>
+                <div class="stat-num stat-xl">78.4</div>
+                <div class="stat-label">Democracy Health Score / 100</div>
+              </div>
+              <span class="badge badge-green">▲ 2.1 MoM</span>
+            </div>
+            <div class="hr"></div>
+            <div class="stack gap-10">
+              <div>
+                <div class="row between gap-8" style="margin-bottom:5px;"><span class="issue-meta">Transparency</span><span class="issue-meta">82%</span></div>
+                <div class="pbar pbar-thin"><i style="width:82%"></i></div>
+              </div>
+              <div>
+                <div class="row between gap-8" style="margin-bottom:5px;"><span class="issue-meta">Citizen Engagement</span><span class="issue-meta">71%</span></div>
+                <div class="pbar pbar-thin green"><i style="width:71%"></i></div>
+              </div>
+              <div>
+                <div class="row between gap-8" style="margin-bottom:5px;"><span class="issue-meta">Legislative Responsiveness</span><span class="issue-meta">80%</span></div>
+                <div class="pbar pbar-thin"><i style="width:80%"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Status -->
+          <div class="card c-4">
+            <span class="card-eyebrow">System Status</span>
+            <div class="row gap-10" style="margin-bottom:14px;">
+              <span class="pulse-dot" style="background:var(--signal-green);"></span>
+              <div class="stat-num stat-md">AI Engine Active</div>
+            </div>
+            <div class="stack gap-10">
+              <div class="row between"><span class="issue-meta">Bills monitored</span><b style="font-family:var(--f-mono); font-size:12.5px;">142</b></div>
+              <div class="row between"><span class="issue-meta">Data sources synced</span><b style="font-family:var(--f-mono); font-size:12.5px;">37</b></div>
+              <div class="row between"><span class="issue-meta">Citizen inputs (24h)</span><b style="font-family:var(--f-mono); font-size:12.5px;">18,204</b></div>
+              <div class="row between"><span class="issue-meta">Last model refresh</span><b style="font-family:var(--f-mono); font-size:12.5px;">6 min ago</b></div>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="card c-4 stack" style="justify-content:space-between;">
+            <div>
+              <span class="card-eyebrow">Quick Actions</span>
+              <p style="font-size:12px; color:var(--ink-500); margin-top:2px; margin-bottom:14px;">Jump into the active workflow for this week's priorities.</p>
+            </div>
+            <div class="stack gap-10">
+              <button class="btn btn-primary btn-block" onclick="goTo('priority')">View Analysis →</button>
+              <button class="btn btn-secondary btn-block" onclick="goTo('pulse')">Public Consultation</button>
+              <button class="btn btn-secondary btn-block" onclick="goTo('simulator')">Policy Simulator</button>
+            </div>
+          </div>
+
+          <!-- National Priorities list -->
+          <div class="card c-5">
+            <div class="card-head">
+              <div><h3>Top National Priorities</h3><div class="sub">Ranked by AI urgency score · updated hourly</div></div>
+              <span class="badge badge-blue">5 active</span>
+            </div>
+            <div class="stack">
+              <div class="list-row tt-anchor" data-tt-title="Water Crisis" data-tt-urgency="96%" data-tt-pop="42 million citizens" data-tt-committee="Environment &amp; Water Resources" data-tt-desc="Reservoir levels declining nationwide amid below-average monsoon recharge.">
+                <div class="rank-chip">01</div>
+                <div style="flex:1;">
+                  <div class="issue-name">Water Crisis</div>
+                  <div class="pbar pbar-thin red" style="margin-top:6px;"><i style="width:96%"></i></div>
+                </div>
+                <b style="font-family:var(--f-mono); color:var(--signal-red);">96%</b>
+              </div>
+              <div class="list-row tt-anchor" data-tt-title="Youth Unemployment" data-tt-urgency="91%" data-tt-pop="63 million citizens" data-tt-committee="Labour &amp; Employment" data-tt-desc="Formal-sector hiring has slowed sharply among under-25 job seekers.">
+                <div class="rank-chip">02</div>
+                <div style="flex:1;">
+                  <div class="issue-name">Youth Unemployment</div>
+                  <div class="pbar pbar-thin amber" style="margin-top:6px;"><i style="width:91%"></i></div>
+                </div>
+                <b style="font-family:var(--f-mono); color:var(--signal-amber);">91%</b>
+              </div>
+              <div class="list-row tt-anchor" data-tt-title="Cybercrime" data-tt-urgency="87%" data-tt-pop="28 million citizens" data-tt-committee="Home Affairs &amp; Cyber Security" data-tt-desc="Financial fraud complaints have risen sharply across urban districts.">
+                <div class="rank-chip">03</div>
+                <div style="flex:1;">
+                  <div class="issue-name">Cybercrime</div>
+                  <div class="pbar pbar-thin amber" style="margin-top:6px;"><i style="width:87%"></i></div>
+                </div>
+                <b style="font-family:var(--f-mono); color:var(--signal-amber);">87%</b>
+              </div>
+              <div class="list-row tt-anchor" data-tt-title="Healthcare Access" data-tt-urgency="82%" data-tt-pop="51 million citizens" data-tt-committee="Health &amp; Family Welfare" data-tt-desc="Rural primary care coverage remains below national targets.">
+                <div class="rank-chip">04</div>
+                <div style="flex:1;">
+                  <div class="issue-name">Healthcare Access</div>
+                  <div class="pbar pbar-thin" style="margin-top:6px;"><i style="width:82%"></i></div>
+                </div>
+                <b style="font-family:var(--f-mono); color:var(--blue-600);">82%</b>
+              </div>
+              <div class="list-row tt-anchor" data-tt-title="Air Pollution" data-tt-urgency="78%" data-tt-pop="34 million citizens" data-tt-committee="Environment &amp; Water Resources" data-tt-desc="Winter AQI breaches continue across northern metro regions.">
+                <div class="rank-chip">05</div>
+                <div style="flex:1;">
+                  <div class="issue-name">Air Pollution</div>
+                  <div class="pbar pbar-thin" style="margin-top:6px;"><i style="width:78%"></i></div>
+                </div>
+                <b style="font-family:var(--f-mono); color:var(--blue-600);">78%</b>
+              </div>
+            </div>
+          </div>
+
+          <!-- Citizen Sentiment Trend -->
+          <div class="card c-7">
+            <div class="card-head">
+              <div><h3>Citizen Sentiment Trend</h3><div class="sub">Net favorability across monitored bills, last 12 weeks</div></div>
+              <div class="row gap-8"><span class="badge badge-green">Water +14</span><span class="badge badge-red">Cyber -6</span></div>
+            </div>
+            <svg viewBox="0 0 560 190" width="100%" height="190">
+              <defs>
+                <linearGradient id="sentFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3568F2" stop-opacity="0.28"/>
+                  <stop offset="100%" stop-color="#3568F2" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g stroke="#E9EEF6" stroke-width="1">
+                <line x1="0" y1="20" x2="560" y2="20"/>
+                <line x1="0" y1="60" x2="560" y2="60"/>
+                <line x1="0" y1="100" x2="560" y2="100"/>
+                <line x1="0" y1="140" x2="560" y2="140"/>
+              </g>
+              <path d="M0,140 L0,110 C40,105 60,90 90,95 C130,102 150,70 190,65 C230,60 250,80 290,72 C330,64 350,40 390,45 C430,50 450,68 490,55 C520,46 540,38 560,30 L560,140 Z" fill="url(#sentFill)"/>
+              <path d="M0,110 C40,105 60,90 90,95 C130,102 150,70 190,65 C230,60 250,80 290,72 C330,64 350,40 390,45 C430,50 450,68 490,55 C520,46 540,38 560,30" fill="none" stroke="#2557E8" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M0,150 C40,148 70,140 100,142 C140,144 160,150 200,148 C240,146 260,155 300,153 C340,151 360,144 400,146 C440,148 460,152 500,150 C520,149 540,149 560,148" fill="none" stroke="#D14343" stroke-width="2" stroke-dasharray="4 4" opacity="0.7"/>
+              <circle cx="560" cy="30" r="4.5" fill="#2557E8"/>
+            </svg>
+            <div class="row between" style="font-size:10.5px; color:var(--ink-300); font-family:var(--f-mono); margin-top:2px;">
+              <span>W1</span><span>W3</span><span>W5</span><span>W7</span><span>W9</span><span>W11</span><span>W12</span>
+            </div>
+          </div>
+
+          <!-- Issue Heatmap -->
+          <div class="card c-6">
+            <div class="card-head">
+              <div><h3>National Issue Heatmap</h3><div class="sub">Urgency intensity by state cluster</div></div>
+            </div>
+            <div id="heatmapGrid"></div>
+            <div class="hex-legend">
+              <span><i style="background:#D14343"></i>Critical</span>
+              <span><i style="background:#C97F17"></i>Elevated</span>
+              <span><i style="background:#3568F2"></i>Moderate</span>
+              <span><i style="background:#D9E0EB"></i>Low</span>
+            </div>
+          </div>
+
+          <!-- Priority Timeline -->
+          <div class="card c-6">
+            <div class="card-head">
+              <div><h3>Priority Timeline</h3><div class="sub">Committee review → floor debate schedule</div></div>
+            </div>
+            <div class="stack gap-14">
+              <div>
+                <div class="row between" style="margin-bottom:6px;"><span style="font-size:12.5px; font-weight:600;">Water Security Bill</span><span class="badge badge-red">Debate: Aug 4</span></div>
+                <div style="position:relative; height:8px; background:var(--line-100); border-radius:20px;">
+                  <div style="position:absolute; left:0; width:74%; height:100%; background:var(--signal-red); border-radius:20px; opacity:0.85;"></div>
+                </div>
+              </div>
+              <div>
+                <div class="row between" style="margin-bottom:6px;"><span style="font-size:12.5px; font-weight:600;">Youth Employment Framework</span><span class="badge badge-amber">Committee: Aug 12</span></div>
+                <div style="position:relative; height:8px; background:var(--line-100); border-radius:20px;">
+                  <div style="position:absolute; left:0; width:52%; height:100%; background:var(--signal-amber); border-radius:20px; opacity:0.85;"></div>
+                </div>
+              </div>
+              <div>
+                <div class="row between" style="margin-bottom:6px;"><span style="font-size:12.5px; font-weight:600;">Cybercrime Prevention Act</span><span class="badge badge-blue">Consultation: Aug 20</span></div>
+                <div style="position:relative; height:8px; background:var(--line-100); border-radius:20px;">
+                  <div style="position:absolute; left:0; width:34%; height:100%; background:var(--blue-500); border-radius:20px; opacity:0.85;"></div>
+                </div>
+              </div>
+              <div>
+                <div class="row between" style="margin-bottom:6px;"><span style="font-size:12.5px; font-weight:600;">Clean Air Amendment</span><span class="badge badge-grey">Drafting: Sep 3</span></div>
+                <div style="position:relative; height:8px; background:var(--line-100); border-radius:20px;">
+                  <div style="position:absolute; left:0; width:18%; height:100%; background:var(--ink-300); border-radius:20px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      <section class="page" id="page-priority">
+        <div class="grid g-12">
+
+          <!-- Issue header -->
+          <div class="card c-12" style="background:linear-gradient(120deg, rgba(209,67,67,0.08), rgba(255,255,255,0.5) 60%);">
+            <div class="row between" style="align-items:flex-start; flex-wrap:wrap; gap:16px;">
+              <div>
+                <span class="badge badge-red" style="margin-bottom:10px;">● Rank 01 of 5 · Critical</span>
+                <div class="stat-num" style="font-size:26px;">Water Crisis</div>
+                <div class="stat-label" style="margin-top:6px;">Issue ID WTR-2036-004 · National Priority Engine · Reassessed 6 min ago</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="stat-num stat-xl" style="color:var(--signal-red);">96%</div>
+                <div class="stat-label">Urgency Score</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affected states hex lattice map -->
+          <div class="card c-7">
+            <div class="card-head">
+              <div><h3>Affected States Map</h3><div class="sub">Constituency lattice, shaded by reservoir stress index</div></div>
+              <span class="badge badge-blue">19 states flagged</span>
+            </div>
+            <div class="hex-svg-wrap" id="affectedHexMap"></div>
+            <div class="hex-legend">
+              <span><i style="background:#D14343"></i>Severe (&gt;80)</span>
+              <span><i style="background:#C97F17"></i>High (55–80)</span>
+              <span><i style="background:#3568F2"></i>Moderate (30–55)</span>
+              <span><i style="background:#D9E0EB"></i>Stable (&lt;30)</span>
+            </div>
+          </div>
+
+          <!-- AI Explanation -->
+          <div class="card c-5">
+            <div class="ai-panel">
+              <div class="ai-panel-head">
+                <div class="ai-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 9.5 22 12 14.5 14.5 12 22 9.5 14.5 2 12 9.5 9.5Z"/></svg></div>
+                <b>AI Explanation</b>
+              </div>
+              <p style="margin-bottom:10px;">The engine ranked Water Crisis first based on four converging signals from independent data sources, cross-validated over the past rolling quarter.</p>
+              <ul class="ai-reason-list">
+                <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Reservoir levels declining across 19 states, down 31% YoY</li>
+                <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Citizen complaints increasing 4.2× over the last 60 days</li>
+                <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Agricultural losses estimated at ₹12,400 Cr this season</li>
+                <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Climate projections show below-average monsoon recharge</li>
+              </ul>
+            </div>
+
+            <div class="hr"></div>
+
+            <span class="card-eyebrow">Recommended Committee</span>
+            <div class="row gap-10" style="margin:6px 0 14px;">
+              <div class="avatar-sq" style="width:36px; height:36px; border-radius:10px; background:linear-gradient(145deg,#3568F2,#0F2447); flex-shrink:0;"></div>
+              <div>
+                <b style="font-size:13px; color:var(--navy-950); display:block;">Standing Committee on Water Resources</b>
+                <span class="issue-meta">Chaired by Rep. K. Iyer · 24 members · quorum ready</span>
+              </div>
+            </div>
+
+            <span class="card-eyebrow">Suggested Debate Timeline</span>
+            <div class="row gap-8" style="margin-top:8px; flex-wrap:wrap;">
+              <span class="tag">Aug 1 — Committee review</span>
+              <span class="tag">Aug 4 — Floor debate</span>
+              <span class="tag">Aug 9 — Vote window</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card c-12 row between" style="flex-wrap:wrap; gap:14px;">
+            <div>
+              <div style="font-family:var(--f-display); font-weight:600; font-size:14.5px; color:var(--navy-950);">Ready to move this issue forward?</div>
+              <div class="issue-meta">Both actions log to the committee record and notify subscribed members.</div>
+            </div>
+            <div class="row gap-10">
+              <button class="btn btn-secondary" onclick="goTo('simulator')">Run Simulation</button>
+              <button class="btn btn-primary" onclick="goTo('pulse')">Launch Public Consultation →</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+      <section class="page" id="page-pulse">
+        <div class="grid g-12">
+
+          <!-- Bill header + AI summary -->
+          <div class="card c-8">
+            <span class="card-eyebrow">Bill Under Consultation</span>
+            <div class="stat-num" style="font-size:22px; margin-bottom:12px;">National Water Security Bill, 2036</div>
+            <div class="ai-panel">
+              <div class="ai-panel-head">
+                <div class="ai-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 9.5 22 12 14.5 14.5 12 22 9.5 14.5 2 12 9.5 9.5Z"/></svg></div>
+                <b>AI Summary</b>
+              </div>
+              <p>The bill establishes a National Water Authority to regulate groundwater extraction, mandates rainwater harvesting for new construction above 500 sq. m, and creates an inter-state water-sharing tribunal with binding arbitration. Public feedback so far runs supportive overall, with the strongest reservations concerning enforcement capacity at the panchayat level.</p>
+            </div>
+          </div>
+
+          <div class="card c-4 stack" style="justify-content:space-between;">
+            <div>
+              <span class="card-eyebrow">Consultation Window</span>
+              <div class="stat-num stat-md">11 days left</div>
+              <div class="stat-label">Closes Aug 9, 2036 · 23:59 IST</div>
+            </div>
+            <div class="hr"></div>
+            <div class="row between"><span class="issue-meta">Total responses</span><b style="font-family:var(--f-mono);">284,910</b></div>
+            <div class="row between" style="margin-top:8px;"><span class="issue-meta">Verified citizens</span><b style="font-family:var(--f-mono);">91%</b></div>
+          </div>
+
+          <!-- Poll donut -->
+          <div class="card c-4">
+            <div class="card-head"><div><h3>Citizen Poll</h3><div class="sub">Live poll results</div></div></div>
+            <div style="display:flex; align-items:center; justify-content:center; position:relative;">
+              <svg width="150" height="150" viewBox="0 0 150 150">
+                <circle cx="75" cy="75" r="58" fill="none" stroke="#E9EEF6" stroke-width="18"/>
+                <circle cx="75" cy="75" r="58" fill="none" stroke="#189A72" stroke-width="18"
+                  transform="rotate(-90 75 75)"
+                  stroke-dasharray="229.6 364.4" stroke-linecap="round"/>
+                <circle cx="75" cy="75" r="58" fill="none" stroke="#D14343" stroke-width="18"
+                  transform="rotate(136.8 75 75)"
+                  stroke-dasharray="65.6 364.4" stroke-linecap="round"/>
+                <circle cx="75" cy="75" r="58" fill="none" stroke="#94A0B4" stroke-width="18"
+                  transform="rotate(201.6 75 75)"
+                  stroke-dasharray="69.2 364.4" stroke-linecap="round"/>
+              </svg>
+              <div style="position:absolute; text-align:center;">
+                <div class="stat-num stat-lg">63%</div>
+                <div class="issue-meta">Support</div>
+              </div>
+            </div>
+            <div class="stack gap-8" style="margin-top:6px;">
+              <div class="row between"><span class="row gap-6"><i class="dot-sm" style="background:#189A72"></i><span class="issue-meta">Support</span></span><b style="font-family:var(--f-mono); font-size:12px;">63%</b></div>
+              <div class="row between"><span class="row gap-6"><i class="dot-sm" style="background:#D14343"></i><span class="issue-meta">Oppose</span></span><b style="font-family:var(--f-mono); font-size:12px;">18%</b></div>
+              <div class="row between"><span class="row gap-6"><i class="dot-sm" style="background:#94A0B4"></i><span class="issue-meta">Neutral</span></span><b style="font-family:var(--f-mono); font-size:12px;">19%</b></div>
+            </div>
+          </div>
+
+          <!-- AI Comment summary + concerns + amendments -->
+          <div class="card c-7">
+            <div class="card-head"><div><h3>AI Summary of Public Comments</h3><div class="sub">Clustered from 284,910 submissions using topic modeling</div></div></div>
+            <p style="font-size:12.5px; color:var(--ink-700); line-height:1.7; margin-bottom:16px;">Support concentrates among urban respondents citing long-term supply security, while opposition clusters in agrarian belts concerned about extraction permits. A recurring theme across both groups is skepticism that local bodies have the staffing to enforce the bill as written.</p>
+
+            <div class="grid" style="grid-template-columns:1fr 1fr; gap:16px;">
+              <div>
+                <span class="card-eyebrow">Top Concerns</span>
+                <div class="stack gap-8" style="margin-top:8px;">
+                  <div class="row between"><span style="font-size:12px;">Panchayat enforcement capacity</span><span class="badge badge-red">41%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Impact on small farmers</span><span class="badge badge-amber">33%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Tribunal jurisdiction overlap</span><span class="badge badge-amber">19%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Compliance cost, new builds</span><span class="badge badge-grey">14%</span></div>
+                </div>
+              </div>
+              <div>
+                <span class="card-eyebrow">Top Suggested Amendments</span>
+                <div class="stack gap-8" style="margin-top:8px;">
+                  <div class="row between"><span style="font-size:12px;">Phase-in for farms &lt;2 acres</span><span class="badge badge-blue">28%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Fund panchayat enforcement staff</span><span class="badge badge-blue">24%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Lower harvesting threshold</span><span class="badge badge-blue">17%</span></div>
+                  <div class="row between"><span style="font-size:12px;">Clarify tribunal appeals path</span><span class="badge badge-blue">12%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Age distribution -->
+          <div class="card c-5">
+            <div class="card-head"><div><h3>Age Distribution</h3><div class="sub">Respondent age bands</div></div></div>
+            <svg viewBox="0 0 320 150" width="100%" height="150">
+              <g font-family="IBM Plex Mono" font-size="9" fill="#5D6779">
+                <rect x="10" y="96" width="34" height="40" rx="5" fill="#6C93F7"/>
+                <text x="27" y="90" text-anchor="middle" fill="#3B4454" font-weight="600">14%</text>
+                <text x="27" y="146" text-anchor="middle">18–24</text>
+
+                <rect x="58" y="44" width="34" height="92" rx="5" fill="#3568F2"/>
+                <text x="75" y="38" text-anchor="middle" fill="#3B4454" font-weight="600">31%</text>
+                <text x="75" y="146" text-anchor="middle">25–34</text>
+
+                <rect x="106" y="52" width="34" height="84" rx="5" fill="#2557E8"/>
+                <text x="123" y="46" text-anchor="middle" fill="#3B4454" font-weight="600">28%</text>
+                <text x="123" y="146" text-anchor="middle">35–44</text>
+
+                <rect x="154" y="80" width="34" height="56" rx="5" fill="#3568F2"/>
+                <text x="171" y="74" text-anchor="middle" fill="#3B4454" font-weight="600">19%</text>
+                <text x="171" y="146" text-anchor="middle">45–54</text>
+
+                <rect x="202" y="108" width="34" height="28" rx="5" fill="#6C93F7"/>
+                <text x="219" y="102" text-anchor="middle" fill="#3B4454" font-weight="600">6%</text>
+                <text x="219" y="146" text-anchor="middle">55–64</text>
+
+                <rect x="250" y="126" width="34" height="10" rx="4" fill="#B7C6F5"/>
+                <text x="267" y="120" text-anchor="middle" fill="#3B4454" font-weight="600">2%</text>
+                <text x="267" y="146" text-anchor="middle">65+</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Regional support -->
+          <div class="card c-7">
+            <div class="card-head"><div><h3>Regional Support</h3><div class="sub">Net support by zone</div></div></div>
+            <div class="stack gap-10">
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">North</span><span class="issue-meta">71% support</span></div><div class="pbar green"><i style="width:71%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">West</span><span class="issue-meta">68% support</span></div><div class="pbar green"><i style="width:68%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">South</span><span class="issue-meta">59% support</span></div><div class="pbar"><i style="width:59%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">East</span><span class="issue-meta">47% support</span></div><div class="pbar amber"><i style="width:47%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">Northeast</span><span class="issue-meta">55% support</span></div><div class="pbar"><i style="width:55%"></i></div></div>
+            </div>
+          </div>
+
+          <div class="card c-12 row between" style="flex-wrap:wrap; gap:14px;">
+            <div>
+              <div style="font-family:var(--f-display); font-weight:600; font-size:14.5px; color:var(--navy-950);">Consultation data is ready for modeling</div>
+              <div class="issue-meta">Feed public sentiment and amendments directly into the policy simulator.</div>
+            </div>
+            <button class="btn btn-primary" onclick="goTo('simulator')">Proceed to Policy Simulation →</button>
+          </div>
+
+        </div>
+      </section>
+      <section class="page" id="page-simulator">
+        <div class="grid g-12">
+
+          <div class="card c-12 row between" style="flex-wrap:wrap; gap:14px;">
+            <div>
+              <span class="card-eyebrow">Simulation Target</span>
+              <div class="stat-num" style="font-size:20px;">National Water Security Bill, 2036 — Full Text v3</div>
+            </div>
+            <div class="row gap-8">
+              <span class="tag">Model: PolicySim-4</span>
+              <span class="tag">Confidence: 87%</span>
+              <span class="badge badge-blue">Simulation Complete</span>
+              <button class="btn btn-secondary btn-sm" onclick="openViewBillModal()">View Bill</button>
+            </div>
+          </div>
+
+          <!-- Impact metrics -->
+          <div class="card c-3">
+            <span class="card-eyebrow">Economic Impact</span>
+            <div class="stat-num stat-lg" style="color:var(--signal-green);">+₹8,400 Cr</div>
+            <div class="stat-label">Projected 5-yr GDP contribution</div>
+            <span class="trend-up" style="display:block; margin-top:8px;">▲ Agricultural yield stabilization</span>
+          </div>
+          <div class="card c-3">
+            <span class="card-eyebrow">Employment Impact</span>
+            <div class="stat-num stat-lg" style="color:var(--signal-green);">+112,000</div>
+            <div class="stat-label">Jobs, water infra & compliance</div>
+            <span class="trend-up" style="display:block; margin-top:8px;">▲ Concentrated in rural districts</span>
+          </div>
+          <div class="card c-3">
+            <span class="card-eyebrow">Budget Cost</span>
+            <div class="stat-num stat-lg">₹4,150 Cr</div>
+            <div class="stat-label">5-yr implementation outlay</div>
+            <span class="issue-meta" style="display:block; margin-top:8px;">62% capex · 38% opex</span>
+          </div>
+          <div class="card c-3">
+            <span class="card-eyebrow">Environmental Impact</span>
+            <div class="stat-num stat-lg" style="color:var(--signal-green);">+21%</div>
+            <div class="stat-label">Groundwater recharge, 5-yr</div>
+            <span class="trend-up" style="display:block; margin-top:8px;">▲ Strongest in Rajasthan, Haryana</span>
+          </div>
+
+          <!-- Risk meter -->
+          <div class="card c-4">
+            <div class="card-head"><div><h3>Risk Meter</h3><div class="sub">Composite implementation risk</div></div></div>
+            <div class="gauge-wrap">
+              <svg width="200" height="120" viewBox="0 0 200 120">
+                <path d="M14,110 A86,86 0 0 1 186,110" fill="none" stroke="#E9EEF6" stroke-width="16" stroke-linecap="round"/>
+                <path d="M14,110 A86,86 0 0 1 186,110" fill="none" stroke="url(#riskGrad)" stroke-width="16" stroke-linecap="round"
+                  stroke-dasharray="270" stroke-dashoffset="175.5"/>
+                <defs>
+                  <linearGradient id="riskGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#189A72"/>
+                    <stop offset="55%" stop-color="#C97F17"/>
+                    <stop offset="100%" stop-color="#D14343"/>
+                  </linearGradient>
+                </defs>
+                <line x1="100" y1="110" x2="100" y2="30" stroke="#16305E" stroke-width="3" stroke-linecap="round" transform="rotate(-27 100 110)"/>
+                <circle cx="100" cy="110" r="6" fill="#16305E"/>
+              </svg>
+              <div class="gauge-read">Moderate</div>
+              <div class="stat-label">35 / 100 risk index</div>
+            </div>
+          </div>
+
+          <!-- State-wise impact map -->
+          <div class="card c-8">
+            <div class="card-head">
+              <div><h3>State-wise Impact Map</h3><div class="sub">Net projected benefit — all states &amp; union territories</div></div>
+            </div>
+            <div class="india-map-wrap" id="indiaImpactMap"></div>
+            <div class="hex-legend">
+              <span><i style="background:#189A72"></i>High benefit</span>
+              <span><i style="background:#3568F2"></i>Moderate benefit</span>
+              <span><i style="background:#C97F17"></i>Mixed / watch</span>
+              <span><i style="background:#D9E0EB"></i>Minimal effect</span>
+            </div>
+          </div>
+
+          <!-- AI recommendation -->
+          <div class="card c-12">
+            <div class="ai-panel">
+              <div class="ai-panel-head">
+                <div class="ai-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 9.5 22 12 14.5 14.5 12 22 9.5 14.5 2 12 9.5 9.5Z"/></svg></div>
+                <b>AI Recommendation</b>
+              </div>
+              <p>The bill's projected benefits substantially outweigh implementation risk, with the main exposure being enforcement capacity at the panchayat level — consistent with concerns raised in the citizen consultation. Recommend proceeding to floor debate with an amendment funding local enforcement staff, which the simulator projects would reduce composite risk from 35 to roughly 22.</p>
+            </div>
+          </div>
+
+          <!-- Scenarios -->
+          <div class="grid g-12" style="grid-column: span 12;">
+            <div class="c-4 scenario-card best">
+              <span class="badge badge-green" style="margin-bottom:10px;">Best Case</span>
+              <div class="stat-num stat-md">+₹11,200 Cr</div>
+              <div class="stat-label" style="margin-bottom:10px;">GDP impact, full compliance</div>
+              <div class="hr"></div>
+              <div class="issue-meta">Assumes 95% enforcement, strong monsoon recharge, no litigation delays.</div>
+            </div>
+            <div class="c-4 scenario-card">
+              <span class="badge badge-blue" style="margin-bottom:10px;">Expected Case</span>
+              <div class="stat-num stat-md">+₹8,400 Cr</div>
+              <div class="stat-label" style="margin-bottom:10px;">GDP impact, base assumptions</div>
+              <div class="hr"></div>
+              <div class="issue-meta">Assumes 78% enforcement, average monsoon, minor state-level delays.</div>
+            </div>
+            <div class="c-4 scenario-card worst">
+              <span class="badge badge-red" style="margin-bottom:10px;">Worst Case</span>
+              <div class="stat-num stat-md">+₹2,100 Cr</div>
+              <div class="stat-label" style="margin-bottom:10px;">GDP impact, weak enforcement</div>
+              <div class="hr"></div>
+              <div class="issue-meta">Assumes 45% enforcement, below-average monsoon, tribunal disputes delay rollout.</div>
+            </div>
+          </div>
+
+          <div class="card c-12 row between" style="flex-wrap:wrap; gap:14px;">
+            <div>
+              <div style="font-family:var(--f-display); font-weight:600; font-size:14.5px; color:var(--navy-950);">Simulation ready for the floor</div>
+              <div class="issue-meta">Sends the full simulation package to the Debate Intelligence workspace.</div>
+            </div>
+            <button class="btn btn-primary" onclick="goTo('debate')">Send to Parliament Debate →</button>
+          </div>
+
+        </div>
+      </section>
+      <section class="page" id="page-debate">
+        <div class="grid g-12">
+
+          <!-- Live session bar -->
+          <div class="card c-12" style="padding:14px 20px;">
+            <div class="row between" style="flex-wrap:wrap; gap:10px;">
+              <div class="row gap-8"><span class="pulse-dot" style="background:#D14343;"></span><b style="font-family:var(--f-mono); font-size:11.5px; letter-spacing:0.5px; color:var(--signal-red);">LIVE · LOK SABHA · WATER SECURITY BILL DEBATE</b></div>
+              <div class="row gap-14" style="font-family:var(--f-mono); font-size:11.5px; color:var(--ink-500);">
+                <span>Session 03 · Day 2</span><span>·</span><span id="clockNow">14:22:07 IST</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Speaker + timer -->
+          <div class="card c-5">
+            <div class="card-head"><div><h3>Current Speaker</h3><div class="sub">Recognized by the Chair</div></div><span class="badge badge-red">Speaking</span></div>
+            <div class="speaker-card">
+              <div class="speaker-avatar">KI</div>
+              <div style="flex:1;">
+                <b style="font-size:14.5px; color:var(--navy-950); display:block;">Rep. K. Iyer</b>
+                <span class="issue-meta">Standing Committee on Water Resources · Government Benches</span>
+              </div>
+              <div class="timer-ring">
+                <svg width="74" height="74" viewBox="0 0 74 74">
+                  <circle cx="37" cy="37" r="31" fill="none" stroke="#E9EEF6" stroke-width="6"/>
+                  <circle id="speakerRing" cx="37" cy="37" r="31" fill="none" stroke="#2557E8" stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="195" stroke-dashoffset="70" transform="rotate(-90 37 37)"/>
+                </svg>
+                <div id="speakerTimerText" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--f-mono); font-weight:600; font-size:13px; color:var(--navy-950);">03:42</div>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div class="row between">
+              <div><div class="stat-num stat-md">7</div><div class="issue-meta">Interruptions</div></div>
+              <div><div class="stat-num stat-md">18:20</div><div class="issue-meta">Total floor time</div></div>
+              <div><div class="stat-num stat-md">4</div><div class="issue-meta">Speakers queued</div></div>
+            </div>
+          </div>
+
+          <!-- AI Fact Check panel -->
+          <div class="card c-7">
+            <div class="card-head"><div><h3>AI Fact-Check Panel</h3><div class="sub">Cross-referenced in real time against verified sources</div></div></div>
+            <div class="fact-item ok">
+              <div class="row between"><b style="font-size:12.5px;">"Reservoir levels are down over 30% year-on-year"</b><span class="badge badge-green">Verified</span></div>
+              <div class="issue-meta" style="margin-top:3px;">Matches Central Water Commission Q2 bulletin — actual figure 31%.</div>
+            </div>
+            <div class="fact-item warn">
+              <div class="row between"><b style="font-size:12.5px;">"This bill has no precedent in Indian legislative history"</b><span class="badge badge-amber">Needs context</span></div>
+              <div class="issue-meta" style="margin-top:3px;">Similar tribunal structure exists in the Inter-State River Water Disputes framework (1956, amended 2002).</div>
+            </div>
+            <div class="fact-item">
+              <div class="row between"><b style="font-size:12.5px;">"Farmers under 2 acres will be exempt in the first phase"</b><span class="badge badge-blue">Pending confirmation</span></div>
+              <div class="issue-meta" style="margin-top:3px;">Reflects the proposed amendment from citizen consultation, not yet in the tabled text.</div>
+            </div>
+          </div>
+
+          <!-- Relevant previous acts + committee recs -->
+          <div class="card c-6">
+            <div class="card-head"><div><h3>Relevant Previous Acts</h3><div class="sub">Surfaced by legislative precedent search</div></div></div>
+            <div class="stack">
+              <div class="list-row"><div class="rank-chip">Act</div><div style="flex:1;"><div class="issue-name">Inter-State River Water Disputes Act</div><div class="issue-meta">1956, amended 2002 · tribunal precedent</div></div></div>
+              <div class="list-row"><div class="rank-chip">Act</div><div style="flex:1;"><div class="issue-name">National Water Policy Resolution</div><div class="issue-meta">2012 · non-binding framework</div></div></div>
+              <div class="list-row"><div class="rank-chip">Act</div><div style="flex:1;"><div class="issue-name">Groundwater Model Bill</div><div class="issue-meta">2019 · state adoption: 14 of 28</div></div></div>
+            </div>
+          </div>
+
+          <div class="card c-6">
+            <div class="card-head"><div><h3>Committee Recommendations</h3><div class="sub">Standing Committee on Water Resources</div></div></div>
+            <ul class="ai-reason-list">
+              <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Fund enforcement staff at panchayat level before rollout</li>
+              <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Phase compliance timeline for holdings under 2 acres</li>
+              <li><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>Clarify tribunal appeals process within 90 days</li>
+            </ul>
+          </div>
+
+          <!-- Live sentiment ticker -->
+          <div class="card c-12" style="padding:14px 20px;">
+            <div class="row between" style="margin-bottom:6px;"><span class="card-eyebrow" style="margin-bottom:0;">Live Citizen Sentiment</span><span class="badge badge-green">Net +46 favorable</span></div>
+            <div class="ticker">
+              <div class="ticker-track">
+                <span class="ticker-item">🟢 "Finally addressing groundwater depletion" — Jaipur</span>
+                <span class="ticker-item">🔴 "Worried about small farm compliance costs" — Amritsar</span>
+                <span class="ticker-item">🟢 "Tribunal arbitration is overdue" — Chennai</span>
+                <span class="ticker-item">🟡 "Need more clarity on funding" — Patna</span>
+                <span class="ticker-item">🟢 "Rainwater harvesting mandate is sensible" — Pune</span>
+                <span class="ticker-item">🔴 "Enforcement will fail without staff" — Lucknow</span>
+                <span class="ticker-item">🟢 "Finally addressing groundwater depletion" — Jaipur</span>
+                <span class="ticker-item">🔴 "Worried about small farm compliance costs" — Amritsar</span>
+                <span class="ticker-item">🟢 "Tribunal arbitration is overdue" — Chennai</span>
+                <span class="ticker-item">🟡 "Need more clarity on funding" — Patna</span>
+                <span class="ticker-item">🟢 "Rainwater harvesting mandate is sensible" — Pune</span>
+                <span class="ticker-item">🔴 "Enforcement will fail without staff" — Lucknow</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Debate quality + final status -->
+          <div class="card c-4">
+            <span class="card-eyebrow">Debate Quality Score</span>
+            <div class="row gap-14" style="align-items:flex-end; margin:6px 0 12px;">
+              <div class="stat-num stat-xl">8.1</div>
+              <div class="stat-label" style="margin-bottom:6px;">/ 10 · above session average</div>
+            </div>
+            <div class="stack gap-8">
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">Evidence grounding</span><span class="issue-meta">88%</span></div><div class="pbar"><i style="width:88%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">On-topic focus</span><span class="issue-meta">76%</span></div><div class="pbar"><i style="width:76%"></i></div></div>
+              <div><div class="row between" style="margin-bottom:4px;"><span class="issue-meta">Cross-party engagement</span><span class="issue-meta">64%</span></div><div class="pbar amber"><i style="width:64%"></i></div></div>
+            </div>
+          </div>
+
+          <div class="card c-4">
+            <span class="card-eyebrow">Final Decision Status</span>
+            <div class="row gap-10" style="margin:8px 0 14px;">
+              <span class="badge badge-amber">Awaiting Vote</span>
+              <span class="issue-meta">Scheduled 17:00 IST today</span>
+            </div>
+            <div class="stack gap-8">
+              <div class="row between"><span class="issue-meta">For (declared)</span><b style="font-family:var(--f-mono); font-size:12.5px; color:var(--signal-green);">218</b></div>
+              <div class="row between"><span class="issue-meta">Against (declared)</span><b style="font-family:var(--f-mono); font-size:12.5px; color:var(--signal-red);">96</b></div>
+              <div class="row between"><span class="issue-meta">Undeclared</span><b style="font-family:var(--f-mono); font-size:12.5px; color:var(--ink-500);">229</b></div>
+            </div>
+          </div>
+
+          <div class="card c-4 stack" style="justify-content:space-between;">
+            <span class="card-eyebrow">Actions</span>
+            <div class="stack gap-10">
+              <button class="btn btn-dark btn-block" onclick="openVoteModal()">Cast Vote</button>
+              <button class="btn btn-secondary btn-block" onclick="openReportPanel()">Report</button>
+              <button class="btn btn-secondary btn-block" id="aiSummaryBtn" onclick="generateAiSummary()">Generate AI Summary</button>
+            </div>
+          </div>
+
+          <!-- AI Summary output -->
+          <div class="card c-12" id="aiSummaryCard" style="display:none;">
+            <div class="card-head"><div><h3>AI Legislative Brief</h3><div class="sub">Generated from the live debate transcript &amp; bill text</div></div></div>
+            <div id="aiSummaryBody"></div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CAST VOTE MODAL ============ -->
+<div class="overlay" id="voteOverlay" onclick="if(event.target===this) closeVoteModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h3>Cast Your Vote</h3>
+        <div class="issue-meta" style="margin-top:3px;">National Water Security Bill, 2036</div>
+      </div>
+      <button class="modal-close" onclick="closeVoteModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="vote-option" data-vote="Approve" onclick="selectVote(this)">
+      <span class="vdot"></span>
+      <div><b style="font-size:13px; color:var(--navy-950);">Approve</b><div class="issue-meta">Support the bill as tabled</div></div>
+    </div>
+    <div class="vote-option" data-vote="Reject" onclick="selectVote(this)">
+      <span class="vdot"></span>
+      <div><b style="font-size:13px; color:var(--navy-950);">Reject</b><div class="issue-meta">Vote against the bill</div></div>
+    </div>
+    <div class="vote-option" data-vote="Abstain" onclick="selectVote(this)">
+      <span class="vdot"></span>
+      <div><b style="font-size:13px; color:var(--navy-950);">Abstain</b><div class="issue-meta">Formally decline to vote</div></div>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="confirmVote()">Confirm Vote</button>
+  </div>
+</div>
+
+<!-- ============ VIEW BILL MODAL ============ -->
+<div class="overlay" id="billOverlay" onclick="if(event.target===this) closeViewBillModal()">
+  <div class="modal-box modal-lg">
+    <div class="modal-head">
+      <div class="row gap-10">
+        <div class="gov-seal">GOI<br>SEAL</div>
+        <div>
+          <h3>National Water Security Bill, 2036</h3>
+          <div class="issue-meta" style="margin-top:3px;">Full Text v3 · Tabled in Lok Sabha</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeViewBillModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="gov-doc stack gap-6">
+      <div class="gov-doc-row"><div class="gov-doc-label">Bill Number</div><div class="gov-doc-val">B. No. 142 of 2036</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Date Tabled</div><div class="gov-doc-val">21 July 2036, Session 03</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Sections</div><div class="gov-doc-val">7 Chapters · 48 Sections · 3 Schedules</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Objectives</div><div class="gov-doc-val">To establish a national framework for sustainable water management, ensure equitable access, and strengthen drought and flood resilience through integrated river-basin planning.</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Key Clauses</div><div class="gov-doc-val">Sec. 12 — National Water Regulatory Authority · Sec. 19 — Inter-state allocation tribunal · Sec. 27 — Mandatory rainwater harvesting for new construction · Sec. 34 — Smart-metering &amp; AI monitoring mandate</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Estimated Budget</div><div class="gov-doc-val">₹4,150 Cr over 5 years (62% capex · 38% opex)</div></div>
+      <div class="gov-doc-row"><div class="gov-doc-label">Expected Outcomes</div><div class="gov-doc-val">+21% groundwater recharge, 112,000 new jobs, and a projected ₹8,400 Cr contribution to GDP over five years.</div></div>
+    </div>
+    <button class="btn btn-secondary btn-block" style="margin-top:16px;" onclick="closeViewBillModal()">Close</button>
+  </div>
+</div>
+
+<!-- ============ REPORT SLIDE-OVER ============ -->
+<div class="slideover-wrap" id="reportWrap">
+  <div class="overlay" onclick="closeReportPanel()"></div>
+  <div class="slideover">
+    <div class="modal-head">
+      <h3>Debate Report</h3>
+      <button class="modal-close" onclick="closeReportPanel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="slideover-section">
+      <h4>Debate Summary</h4>
+      <p class="issue-meta" style="line-height:1.6;">Session 03, Day 2 of the Water Security Bill debate covered enforcement funding, tribunal appeals, and smallholder compliance timelines. Cross-party engagement was moderate, with the strongest agreement on drought-response provisions.</p>
+    </div>
+    <div class="slideover-section">
+      <h4>Fact Check Results</h4>
+      <div class="stack gap-8">
+        <div class="row between"><span class="issue-meta">Verified claims</span><b style="font-family:var(--f-mono); font-size:12px; color:var(--signal-green);">14</b></div>
+        <div class="row between"><span class="issue-meta">Needs context</span><b style="font-family:var(--f-mono); font-size:12px; color:var(--signal-amber);">5</b></div>
+        <div class="row between"><span class="issue-meta">Pending confirmation</span><b style="font-family:var(--f-mono); font-size:12px; color:var(--blue-600);">3</b></div>
+      </div>
+    </div>
+    <div class="slideover-section">
+      <h4>Speaking Statistics</h4>
+      <div class="stack gap-8">
+        <div class="row between"><span class="issue-meta">Total floor time</span><b style="font-family:var(--f-mono); font-size:12px;">18:20</b></div>
+        <div class="row between"><span class="issue-meta">Speakers heard</span><b style="font-family:var(--f-mono); font-size:12px;">11</b></div>
+        <div class="row between"><span class="issue-meta">Avg. speaking time</span><b style="font-family:var(--f-mono); font-size:12px;">1:40</b></div>
+      </div>
+    </div>
+    <div class="slideover-section">
+      <h4>Interruptions</h4>
+      <p class="issue-meta" style="line-height:1.6;">7 recorded interruptions, concentrated during the enforcement-funding segment. The Chair issued 2 formal warnings.</p>
+    </div>
+    <div class="slideover-section">
+      <h4>Attendance</h4>
+      <div class="stack gap-8">
+        <div class="row between"><span class="issue-meta">Present</span><b style="font-family:var(--f-mono); font-size:12px; color:var(--signal-green);">497</b></div>
+        <div class="row between"><span class="issue-meta">Absent</span><b style="font-family:var(--f-mono); font-size:12px; color:var(--signal-red);">46</b></div>
+        <div class="row between"><span class="issue-meta">Quorum</span><b style="font-family:var(--f-mono); font-size:12px;">Met</b></div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="toast('Export started · PDF will download shortly')">Export PDF</button>
+  </div>
+</div>
+
+<!-- ============ TOAST STACK ============ -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ============ GENERIC TOOLTIP ============ -->
+<div class="tooltip-pop" id="ttPop"></div>
+
+<script>
+const INDIA_MAP_DATA = {"viewbox":[0,0,500,560],"states":[{"name":"Andaman and Nicobar","code":"AN","v":15,"d":"M418.5,436.9 L419.9,441.1 L419.7,445.1 L418.8,446.9 L418.7,446.6 L418.1,446.1 L418.3,446.0 L417.4,445.2 L417.6,445.9 L418.5,446.7 L416.7,445.6 L418.4,448.5 L416.3,448.5 L415.5,448.9 L414.9,443.0 L416.6,441.7 L415.7,441.7 L415.9,440.8 L415.5,438.8 L416.5,439.2 L416.7,437.6 L417.0,437.5 L417.5,437.9 L418.1,437.8 L418.4,437.4 L418.5,436.9 Z M420.7,424.6 L420.7,428.4 L421.1,428.2 L421.7,429.1 L421.3,429.7 L420.9,428.5 L419.4,428.9 L420.4,430.2 L421.3,430.3 L420.8,434.0 L419.8,435.3 L419.1,433.9 L418.4,434.4 L418.8,434.5 L418.5,435.1 L418.6,435.5 L419.2,436.1 L418.2,435.8 L417.7,436.9 L418.0,437.7 L417.5,437.9 L416.6,435.1 L417.5,427.8 L418.0,427.8 L418.2,427.3 L418.0,426.5 L419.0,425.9 L418.8,425.2 L420.0,425.4 L420.7,424.6 Z M415.2,450.2 L415.7,453.4 L416.5,453.7 L415.8,453.9 L414.8,458.1 L415.9,455.9 L416.6,456.5 L416.1,460.4 L415.2,460.2 L414.5,461.3 L416.1,461.0 L415.3,464.6 L412.0,457.5 L412.8,455.7 L413.6,457.1 L415.2,450.2 Z M434.6,545.8 L436.3,550.3 L434.2,555.0 L432.8,551.0 L431.4,550.2 L431.3,547.9 L434.6,545.8 Z M412.1,475.8 L413.2,477.8 L412.9,481.9 L412.0,483.1 L409.8,482.7 L409.6,477.9 L412.1,475.8 Z"},{"name":"Telangana","code":"TG","v":48,"d":"M157.8,379.6 L157.4,373.3 L159.2,371.6 L155.0,370.8 L153.1,369.2 L155.3,368.8 L157.0,366.9 L156.2,365.4 L157.6,358.8 L155.2,355.9 L155.6,354.8 L157.8,350.8 L160.8,349.6 L156.6,347.8 L160.2,340.4 L158.4,338.8 L159.4,334.5 L157.9,333.2 L158.1,331.4 L159.1,331.3 L159.3,329.4 L161.6,329.2 L161.5,327.1 L163.3,324.4 L165.1,324.1 L162.0,320.2 L163.5,319.0 L164.5,315.6 L163.7,314.9 L165.2,314.2 L166.9,316.1 L169.0,316.2 L169.2,312.8 L171.3,312.0 L170.7,308.0 L172.3,305.8 L171.3,303.2 L174.4,305.5 L180.4,306.2 L180.6,308.2 L182.5,308.3 L182.3,310.2 L186.0,311.9 L187.2,309.0 L191.0,311.2 L196.3,309.4 L199.5,313.0 L199.0,317.4 L197.6,318.7 L197.6,320.0 L198.9,320.3 L198.4,324.4 L201.8,326.9 L204.5,326.1 L205.8,328.6 L208.2,327.8 L210.7,329.9 L213.3,335.0 L212.4,336.6 L214.0,335.4 L214.6,337.3 L216.5,336.6 L217.5,343.9 L219.6,342.7 L225.1,343.6 L228.6,342.0 L230.3,342.7 L226.7,345.1 L224.4,351.7 L220.1,352.7 L219.7,354.5 L215.3,355.1 L214.1,358.5 L210.8,357.9 L209.5,356.3 L207.5,358.6 L206.3,357.8 L206.0,359.5 L209.9,360.4 L209.5,363.5 L206.3,362.6 L203.0,358.1 L200.1,360.7 L201.1,362.5 L199.3,365.8 L196.2,364.1 L187.5,367.4 L186.7,373.5 L181.8,374.2 L181.5,376.1 L180.3,375.1 L179.2,377.7 L176.5,376.2 L173.0,376.6 L170.4,377.5 L167.9,381.4 L166.7,380.0 L162.7,380.7 L157.8,379.6 Z"},{"name":"Andhra Pradesh","code":"AP","v":42,"d":"M239.7,364.0 L236.8,364.2 L239.1,367.2 L232.9,370.5 L229.1,372.2 L226.1,371.2 L223.8,371.5 L223.4,371.2 L223.1,371.2 L220.8,373.6 L216.6,383.1 L213.9,383.6 L213.6,381.1 L213.1,380.7 L211.6,380.4 L207.3,381.8 L204.5,384.4 L201.3,391.2 L201.5,393.0 L200.7,393.2 L200.8,395.8 L201.0,400.7 L203.3,405.1 L202.0,414.2 L205.3,427.2 L202.5,421.6 L202.3,423.8 L201.8,421.9 L200.8,424.3 L201.9,425.8 L204.4,426.5 L205.3,428.4 L203.9,426.4 L200.1,425.3 L198.7,429.1 L195.2,430.3 L196.3,431.2 L195.6,431.8 L194.3,430.1 L192.9,430.8 L190.3,429.3 L189.4,429.7 L190.2,431.9 L188.2,433.6 L186.7,432.9 L185.6,435.4 L182.7,434.0 L181.7,435.1 L180.9,433.9 L178.0,434.4 L176.5,435.9 L177.0,437.1 L175.4,441.5 L174.3,440.6 L173.8,442.9 L172.3,442.9 L169.3,441.6 L170.2,438.4 L171.9,436.9 L173.8,438.3 L173.2,436.1 L175.9,430.5 L172.3,429.4 L172.7,424.4 L169.2,424.9 L168.7,423.1 L167.4,423.3 L167.9,419.2 L166.8,418.5 L165.1,419.8 L165.7,417.4 L163.0,417.6 L161.1,421.5 L160.1,420.7 L156.8,422.6 L156.3,419.5 L152.2,419.1 L152.1,418.0 L151.2,419.3 L152.0,421.1 L149.0,421.3 L149.7,417.8 L147.3,413.3 L149.5,413.1 L149.5,415.4 L151.6,416.5 L154.5,415.9 L155.8,418.7 L156.4,417.0 L154.7,415.9 L155.8,414.4 L155.0,414.0 L157.8,413.1 L157.5,411.2 L155.8,410.1 L155.8,412.7 L153.9,410.0 L151.4,410.0 L150.8,412.4 L148.2,411.9 L147.2,408.9 L148.7,407.2 L146.9,407.4 L145.1,405.0 L146.9,398.4 L145.1,397.8 L145.3,395.9 L150.5,397.2 L151.7,394.9 L151.9,392.3 L148.6,387.8 L149.6,387.7 L149.6,385.1 L151.2,385.0 L149.5,381.3 L150.4,379.8 L153.4,378.9 L162.7,380.7 L166.6,380.0 L167.9,381.4 L170.4,377.5 L173.0,376.6 L176.5,376.2 L179.2,377.7 L180.3,375.1 L181.5,376.1 L181.8,374.2 L186.7,373.5 L187.5,367.4 L196.2,364.1 L199.3,365.8 L201.1,362.5 L200.1,360.7 L203.0,358.1 L206.3,362.6 L209.5,363.5 L209.9,360.4 L206.0,359.5 L206.2,357.9 L207.5,358.6 L209.5,356.3 L210.8,357.9 L214.1,358.5 L215.3,355.1 L219.7,354.5 L220.0,352.8 L222.4,351.5 L223.9,352.1 L226.7,345.1 L230.2,343.1 L230.5,341.1 L234.3,338.7 L237.9,340.2 L239.5,338.9 L240.0,337.2 L239.0,336.1 L240.5,334.0 L239.5,333.8 L241.9,329.6 L244.5,335.5 L247.4,331.4 L249.1,333.0 L251.7,332.6 L251.0,331.3 L252.3,329.6 L251.0,327.7 L253.0,325.1 L254.3,326.1 L257.5,323.9 L256.0,320.9 L258.5,321.8 L258.6,319.4 L259.8,320.6 L261.3,317.8 L263.4,322.3 L264.1,320.6 L265.5,324.2 L269.1,325.6 L273.0,324.9 L275.0,322.4 L274.8,320.4 L275.7,321.1 L277.3,319.5 L277.7,320.5 L279.0,319.4 L277.8,318.3 L279.7,317.9 L280.4,319.8 L269.8,333.9 L260.5,339.5 L256.6,345.1 L255.3,345.4 L254.4,347.7 L244.1,353.3 L240.1,356.7 L238.1,360.3 L239.8,361.8 L239.9,359.7 L240.0,360.8 L239.7,364.0 Z"},{"name":"Arunachal Pradesh","code":"AR","v":20,"d":"M472.4,120.5 L475.2,124.9 L477.7,124.5 L476.9,126.1 L473.0,127.9 L473.8,131.2 L479.9,127.9 L479.1,129.5 L481.5,133.6 L475.5,140.6 L477.8,141.9 L482.3,139.6 L487.9,142.5 L489.5,141.4 L494.8,144.7 L493.2,147.0 L495.0,148.1 L494.6,150.5 L492.3,150.2 L486.2,155.8 L486.5,158.8 L490.8,164.7 L490.4,165.7 L485.7,163.8 L486.1,162.6 L484.6,160.9 L481.5,160.5 L479.9,162.0 L472.7,163.2 L466.5,169.8 L463.1,170.9 L461.3,173.5 L458.1,173.7 L457.4,166.8 L461.8,165.1 L462.8,162.5 L469.2,162.6 L471.4,160.5 L470.6,159.3 L468.5,159.4 L469.0,157.1 L466.9,153.7 L470.6,149.1 L464.4,149.3 L444.9,157.0 L441.4,155.4 L441.5,157.6 L433.9,164.7 L434.3,166.2 L428.5,168.8 L420.5,169.2 L414.4,166.9 L413.2,168.4 L405.1,169.7 L403.7,164.5 L403.9,162.5 L405.3,162.1 L403.6,158.5 L397.4,158.4 L395.8,156.5 L397.2,153.1 L395.7,151.2 L400.3,152.1 L401.9,154.0 L406.8,151.2 L408.6,152.8 L412.8,151.9 L415.8,148.7 L414.5,147.3 L414.9,146.1 L423.9,142.1 L423.3,140.1 L425.9,136.3 L435.9,135.7 L440.8,127.8 L444.4,125.0 L446.6,125.0 L447.8,122.7 L450.7,126.2 L454.5,126.9 L454.0,126.1 L461.0,128.7 L463.3,126.9 L463.2,125.3 L467.3,122.6 L472.4,120.5 Z"},{"name":"Assam","code":"AS","v":20,"d":"M470.2,149.7 L466.9,153.7 L469.0,157.1 L468.5,159.4 L470.6,159.3 L471.3,160.6 L469.2,162.6 L462.7,162.6 L461.8,165.1 L454.4,169.1 L452.3,168.8 L450.0,172.0 L445.1,174.0 L442.5,177.9 L441.8,176.1 L437.2,183.5 L436.8,188.3 L433.7,190.3 L433.3,187.4 L425.8,195.5 L428.0,197.6 L428.2,200.0 L424.4,205.6 L423.5,209.5 L422.1,209.6 L420.9,217.2 L417.3,217.8 L416.2,215.1 L411.2,222.5 L410.4,220.2 L406.9,220.3 L408.3,211.0 L407.3,207.8 L411.6,208.3 L410.4,206.0 L411.5,203.8 L416.9,201.7 L416.5,199.6 L412.9,197.0 L414.3,194.6 L413.0,195.2 L409.8,191.5 L406.0,193.1 L407.1,188.6 L405.9,187.8 L406.1,187.4 L407.0,186.8 L408.3,185.3 L401.9,186.8 L400.2,184.5 L397.7,188.6 L396.1,186.1 L394.4,189.2 L395.3,188.9 L395.2,189.2 L392.0,189.9 L390.1,192.1 L389.6,189.5 L386.3,190.2 L386.8,188.9 L385.3,187.8 L380.0,188.7 L379.2,187.6 L378.1,188.8 L377.5,186.5 L371.4,187.5 L367.6,191.9 L369.7,194.4 L367.2,195.5 L366.2,190.3 L367.5,187.9 L366.5,187.9 L367.3,187.2 L364.2,183.2 L364.6,180.9 L367.0,179.4 L367.0,172.7 L371.5,172.5 L373.0,170.4 L376.3,169.5 L381.2,172.1 L398.0,171.4 L400.9,169.3 L404.2,170.6 L413.2,168.4 L414.4,166.9 L420.5,169.2 L431.3,168.3 L441.5,157.7 L441.4,155.4 L444.9,157.0 L464.4,149.3 L470.2,149.7 Z"},{"name":"Bihar","code":"BR","v":40,"d":"M270.0,157.9 L272.7,160.3 L278.3,161.2 L279.5,163.5 L278.7,166.7 L284.1,168.4 L285.7,169.8 L285.1,170.4 L288.0,170.2 L288.3,172.3 L290.4,172.6 L295.5,170.1 L297.2,171.6 L297.1,174.3 L299.1,175.9 L302.1,174.0 L305.3,175.5 L307.2,174.9 L314.0,178.7 L319.8,175.6 L320.1,178.2 L324.4,180.1 L326.5,178.4 L328.9,179.5 L333.6,177.5 L336.0,179.8 L337.3,176.5 L339.4,176.2 L338.5,177.4 L340.2,180.4 L334.9,183.9 L332.2,188.3 L334.0,189.6 L333.8,191.2 L336.3,192.7 L336.7,196.7 L334.2,195.7 L331.8,197.4 L332.7,202.1 L328.4,199.2 L326.7,200.3 L326.6,202.2 L324.0,201.6 L323.5,204.2 L321.0,205.5 L319.4,213.4 L317.4,212.7 L317.0,214.7 L314.8,213.2 L312.9,214.3 L311.8,213.5 L309.3,218.0 L306.3,216.2 L307.1,213.9 L303.9,213.5 L302.5,210.1 L300.8,211.0 L297.2,209.3 L295.9,213.9 L289.5,215.0 L286.2,217.8 L286.0,216.6 L282.9,217.9 L281.2,214.9 L278.9,217.5 L276.6,217.8 L276.1,219.6 L272.7,216.4 L272.7,214.2 L269.6,215.8 L267.6,212.8 L265.5,214.9 L259.2,215.0 L260.0,213.1 L257.3,210.0 L256.2,205.6 L256.7,202.1 L265.0,197.6 L269.3,192.1 L272.6,193.3 L273.3,191.7 L276.0,192.9 L278.4,192.0 L276.7,189.1 L270.5,186.9 L268.6,184.9 L267.8,182.3 L270.4,182.1 L270.6,179.6 L266.1,178.2 L266.1,176.9 L268.5,176.4 L269.1,174.5 L274.7,174.8 L272.8,172.4 L271.7,172.6 L271.8,170.3 L268.6,169.7 L268.1,165.8 L266.7,165.9 L267.5,164.2 L266.0,162.7 L266.4,161.6 L264.8,161.5 L266.1,160.5 L265.5,159.5 L270.0,157.9 Z"},{"name":"Chandigarh","code":"CH","v":30,"d":"M146.1,97.1 L144.5,96.9 L143.9,95.7 L145.7,95.2 L146.1,97.1 Z"},{"name":"Chhattisgarh","code":"CG","v":22,"d":"M256.3,223.1 L259.4,224.5 L260.3,227.7 L262.6,228.5 L263.9,232.7 L266.6,233.4 L267.8,232.1 L267.2,236.9 L268.9,237.9 L268.3,241.5 L269.9,242.6 L270.2,244.9 L270.9,243.7 L274.0,244.7 L274.1,246.6 L271.5,250.5 L267.8,252.4 L267.8,256.3 L261.3,259.6 L260.2,261.4 L261.0,262.1 L259.8,262.7 L260.7,266.3 L258.7,267.5 L257.9,269.5 L259.0,270.5 L257.2,270.7 L256.5,273.0 L257.6,275.8 L255.4,275.3 L254.0,279.9 L244.6,279.6 L241.6,285.8 L239.7,284.7 L239.3,291.0 L241.1,293.4 L240.5,300.4 L245.8,301.8 L245.9,304.5 L243.8,306.0 L243.9,304.1 L241.3,303.4 L239.6,304.8 L237.8,301.6 L234.3,301.4 L232.9,299.6 L231.7,300.7 L231.3,303.3 L234.9,305.7 L234.2,311.1 L236.9,312.7 L236.6,318.3 L237.9,322.4 L235.2,326.2 L231.9,327.4 L232.9,329.1 L229.5,333.2 L225.8,334.9 L223.4,343.6 L219.6,342.7 L217.5,343.9 L216.5,336.6 L214.6,337.3 L214.0,335.4 L212.4,336.6 L213.3,335.1 L212.3,332.0 L208.2,327.9 L205.7,328.6 L204.0,325.5 L205.9,324.2 L204.5,321.0 L206.5,316.1 L209.6,313.0 L210.3,314.8 L212.7,315.2 L214.3,313.8 L213.3,312.5 L215.1,311.8 L214.0,309.9 L211.1,309.0 L211.2,307.5 L209.2,305.0 L206.7,305.5 L208.4,304.1 L206.8,302.9 L208.8,302.9 L209.2,300.3 L206.6,298.8 L206.5,297.0 L210.4,295.2 L210.5,290.0 L208.1,289.8 L209.8,288.5 L209.1,283.7 L207.7,283.8 L207.1,282.3 L207.7,279.2 L211.4,276.7 L212.1,268.8 L213.7,268.1 L213.8,264.1 L215.3,261.1 L217.0,262.0 L216.4,261.0 L218.8,257.7 L218.8,254.9 L222.4,253.3 L223.6,254.9 L227.3,253.0 L229.8,250.6 L229.9,246.6 L232.8,245.0 L232.8,242.7 L236.4,241.5 L237.0,238.0 L233.4,236.3 L232.4,234.0 L229.4,233.3 L227.2,234.5 L226.6,232.9 L228.5,230.4 L227.2,226.8 L230.2,228.6 L232.4,227.5 L242.6,229.2 L247.4,225.8 L249.9,227.5 L252.9,227.2 L256.3,223.1 Z"},{"name":"Dadra and Nagar Haveli","code":"DN","v":25,"d":"M80.1,296.3 L83.1,294.7 L84.4,295.6 L82.5,297.7 L85.2,298.0 L84.7,300.4 L81.1,299.4 L80.1,296.3 Z"},{"name":"Daman and Diu","code":"DD","v":25,"d":"M43.0,282.7 L45.8,284.3 L44.4,285.3 L45.7,285.8 L44.8,288.4 L42.0,287.1 L43.0,282.7 Z M78.5,293.0 L79.3,294.3 L78.4,294.5 L78.5,293.0 Z M46.4,287.5 L47.5,287.9 L45.7,288.0 L46.4,287.5 Z"},{"name":"Delhi","code":"DL","v":35,"d":"M152.8,132.5 L154.9,136.7 L154.9,138.8 L153.2,140.3 L146.4,137.9 L148.0,136.3 L148.2,132.8 L150.4,131.6 L152.8,132.5 Z"},{"name":"Goa","code":"GA","v":20,"d":"M96.4,382.5 L98.4,385.6 L102.6,384.7 L104.1,391.6 L102.7,392.3 L103.8,393.7 L103.4,396.5 L101.9,398.7 L99.0,398.8 L99.2,397.5 L96.8,395.6 L96.4,390.5 L94.6,389.4 L96.2,389.6 L96.6,389.3 L94.7,388.4 L92.9,383.4 L96.4,382.5 Z"},{"name":"Gujarat","code":"GJ","v":70,"d":"M67.2,213.2 L70.4,213.2 L68.7,213.9 L71.9,215.4 L72.3,217.3 L73.7,215.4 L76.2,216.3 L76.8,218.1 L80.1,218.8 L81.6,215.8 L83.1,215.6 L82.8,217.5 L85.3,218.1 L82.8,221.5 L85.5,224.8 L87.7,222.6 L88.6,226.4 L87.5,229.1 L90.0,230.7 L90.1,232.4 L92.6,232.3 L92.1,235.5 L95.5,235.6 L96.5,237.7 L97.7,236.9 L100.1,238.6 L100.5,240.8 L102.5,240.6 L104.4,245.5 L106.4,246.9 L104.8,251.1 L102.8,251.0 L100.9,253.4 L99.1,252.9 L100.4,255.3 L101.5,254.2 L103.3,255.8 L101.6,257.2 L99.5,256.4 L99.6,259.1 L101.4,261.7 L100.0,263.0 L100.8,264.1 L95.1,266.7 L96.6,269.7 L94.7,270.5 L96.0,273.0 L103.6,271.6 L103.9,273.0 L99.5,273.2 L97.5,274.7 L97.4,276.8 L95.5,277.3 L95.3,279.2 L91.3,279.2 L96.7,282.8 L97.5,287.4 L95.3,288.3 L95.6,289.8 L92.7,290.8 L89.1,288.0 L88.2,289.3 L89.9,291.2 L88.0,294.1 L88.7,297.6 L86.6,297.6 L85.8,299.2 L84.4,297.6 L82.6,298.5 L84.4,296.0 L83.2,294.7 L80.1,296.2 L80.9,297.5 L76.9,299.0 L77.6,295.2 L79.3,294.3 L79.5,287.3 L77.2,283.5 L76.6,279.7 L76.0,279.4 L75.7,279.5 L75.6,280.8 L75.1,281.0 L75.5,278.1 L74.4,277.2 L76.2,273.6 L75.4,274.1 L75.9,272.5 L76.9,272.1 L77.0,272.0 L77.0,271.9 L76.0,272.1 L75.0,273.0 L74.6,271.9 L78.6,269.7 L73.5,269.7 L74.1,266.7 L72.9,264.2 L74.3,259.5 L77.3,260.0 L78.1,258.6 L79.3,259.0 L79.9,258.7 L80.0,258.0 L77.2,258.9 L73.6,257.9 L72.7,259.5 L72.8,258.6 L72.4,258.7 L71.8,257.5 L71.0,257.4 L71.4,256.5 L71.1,256.0 L70.6,256.1 L71.5,259.0 L70.5,258.1 L70.3,260.9 L69.8,260.5 L69.8,259.9 L69.4,259.4 L69.7,259.9 L69.7,260.5 L69.9,260.8 L69.2,264.6 L68.5,262.4 L69.5,262.1 L69.5,261.2 L68.9,261.3 L69.1,261.8 L68.4,262.3 L68.4,263.0 L67.4,262.5 L68.2,264.1 L66.9,263.6 L68.7,265.3 L68.9,268.3 L68.6,267.3 L67.9,266.7 L67.8,266.6 L67.6,266.6 L67.6,266.6 L67.5,266.7 L69.6,270.4 L65.7,276.7 L66.4,278.7 L48.3,287.6 L45.3,288.0 L45.7,285.8 L44.4,285.3 L45.8,284.6 L45.6,283.5 L43.0,282.6 L41.8,287.2 L32.2,280.4 L25.7,272.3 L26.6,271.4 L26.1,270.0 L25.4,271.1 L25.3,270.7 L24.3,270.1 L25.6,272.1 L23.6,270.6 L12.5,257.4 L14.8,254.1 L14.8,255.7 L16.9,255.2 L16.3,257.3 L17.6,258.4 L21.9,256.8 L22.0,255.0 L23.4,257.2 L25.9,254.2 L27.1,255.7 L27.7,253.7 L28.4,254.8 L30.1,252.9 L33.3,252.8 L34.7,250.6 L34.8,249.3 L35.7,248.8 L36.5,246.7 L37.7,245.5 L38.5,243.9 L38.9,242.7 L38.0,243.0 L37.3,243.6 L36.4,245.5 L33.9,244.2 L34.3,245.0 L32.6,244.9 L32.7,244.3 L33.0,244.0 L33.1,243.7 L33.2,243.6 L33.1,243.6 L32.1,245.1 L32.8,245.6 L27.1,247.0 L25.6,249.4 L24.3,248.1 L21.6,248.5 L16.8,247.2 L7.8,241.3 L6.6,239.7 L6.8,239.6 L6.9,240.0 L7.4,240.1 L8.0,239.0 L7.3,238.5 L9.0,238.5 L9.3,238.4 L9.5,237.9 L7.7,238.4 L7.5,237.5 L6.9,236.9 L6.9,237.3 L6.5,236.7 L6.1,236.8 L6.2,236.2 L5.7,236.1 L5.5,234.8 L5.0,234.6 L5.1,231.7 L9.6,227.4 L6.9,227.9 L5.6,229.7 L5.4,228.4 L7.9,226.6 L5.9,225.8 L9.4,225.8 L9.8,219.4 L10.7,219.1 L11.7,221.3 L12.7,219.8 L13.6,220.7 L23.8,219.7 L25.9,221.7 L30.6,221.9 L32.6,219.5 L40.3,217.0 L40.3,220.2 L44.2,220.8 L49.7,217.4 L47.6,216.6 L47.5,214.7 L49.3,212.0 L52.5,213.4 L61.0,212.2 L62.0,213.5 L62.3,212.1 L63.5,213.1 L65.3,211.5 L67.2,213.2 Z"},{"name":"Haryana","code":"HR","v":80,"d":"M145.9,92.5 L147.5,93.1 L149.4,96.1 L151.7,97.1 L151.0,99.4 L152.6,101.1 L155.9,102.2 L156.8,101.4 L156.5,102.5 L157.8,101.7 L159.2,103.2 L156.2,108.2 L153.7,109.3 L151.1,114.6 L151.2,127.4 L152.9,131.2 L148.2,132.8 L148.0,136.3 L146.3,137.4 L147.1,138.8 L150.4,138.6 L151.9,140.7 L154.8,138.7 L157.2,140.6 L157.0,143.2 L158.3,145.0 L157.1,146.9 L158.2,149.5 L153.1,152.6 L149.8,152.0 L150.5,153.5 L149.0,153.5 L148.6,155.1 L147.1,154.3 L148.5,145.8 L146.8,144.2 L141.3,149.1 L141.3,147.8 L139.9,147.6 L140.2,145.6 L137.1,145.0 L138.2,146.1 L137.2,146.6 L137.9,148.0 L135.2,147.4 L134.8,148.5 L136.0,151.6 L131.6,151.1 L130.9,149.8 L132.8,147.1 L131.1,146.7 L133.8,145.5 L130.9,141.5 L128.3,140.7 L124.7,136.8 L123.2,130.8 L123.9,129.2 L122.6,129.1 L121.4,126.7 L122.0,124.4 L116.6,124.9 L112.6,121.7 L108.4,123.1 L107.3,120.8 L108.7,119.3 L107.9,118.6 L108.6,115.0 L106.2,114.3 L107.7,112.8 L107.2,111.2 L109.3,112.1 L111.9,110.4 L115.1,113.0 L116.7,111.9 L116.8,114.0 L117.9,114.4 L118.3,113.3 L119.2,115.0 L117.9,116.7 L119.0,118.9 L122.8,113.9 L124.9,115.2 L128.3,113.6 L130.2,115.1 L132.9,115.1 L136.3,112.8 L135.0,111.6 L136.5,108.3 L135.7,107.2 L137.7,108.2 L139.1,106.4 L139.9,108.3 L142.4,108.7 L143.0,106.3 L141.5,105.2 L144.3,103.9 L145.0,101.9 L148.0,102.7 L147.7,98.8 L146.1,97.6 L146.5,95.1 L145.1,93.2 L145.9,92.5 Z"},{"name":"Himachal Pradesh","code":"HP","v":26,"d":"M145.8,48.3 L147.7,52.2 L151.5,53.2 L154.7,56.3 L161.2,53.4 L164.6,57.3 L165.8,60.8 L172.4,57.4 L172.7,60.1 L170.8,62.3 L173.5,62.3 L174.9,64.0 L173.5,67.3 L176.1,67.8 L176.2,69.7 L179.1,72.0 L177.8,75.9 L180.2,79.3 L178.1,81.2 L183.0,88.9 L180.8,89.1 L179.6,87.2 L174.0,87.2 L172.1,85.6 L164.2,88.2 L162.7,89.9 L163.0,92.0 L161.6,91.9 L162.5,93.8 L161.8,93.4 L160.8,95.5 L162.9,100.1 L158.7,102.9 L151.2,99.8 L151.7,97.1 L149.4,96.1 L147.5,93.1 L142.5,91.0 L142.9,87.0 L139.5,85.7 L138.4,82.7 L137.2,85.0 L135.1,85.3 L130.4,72.9 L125.1,70.4 L126.5,68.8 L125.8,67.5 L131.1,63.9 L129.7,62.3 L130.7,57.5 L128.6,54.9 L132.0,54.8 L138.8,49.3 L142.8,49.7 L145.8,48.3 Z"},{"name":"Jammu and Kashmir","code":"JK","v":24,"d":"M164.4,6.4 L167.9,5.5 L165.9,7.9 L168.2,12.0 L167.5,13.0 L170.3,20.4 L175.7,22.0 L182.7,27.4 L182.3,29.6 L178.0,32.3 L179.1,33.3 L178.1,35.2 L179.4,38.1 L178.1,40.3 L184.3,48.5 L190.0,49.4 L189.0,53.3 L192.2,57.7 L192.3,60.4 L188.3,62.7 L186.5,62.2 L184.8,64.9 L182.6,65.4 L179.3,62.9 L178.7,58.7 L171.3,62.9 L171.1,60.9 L172.7,60.1 L172.4,57.4 L165.8,60.8 L164.6,57.3 L161.2,53.4 L154.7,56.3 L151.5,53.2 L147.7,52.2 L145.4,48.0 L144.6,49.4 L138.8,49.3 L131.3,55.1 L128.9,54.2 L130.9,59.7 L123.7,66.7 L123.3,65.5 L120.7,65.5 L116.5,62.7 L110.1,62.7 L109.2,60.3 L110.1,55.9 L107.3,57.8 L105.3,54.7 L103.7,54.4 L104.2,52.5 L101.8,52.0 L98.6,49.1 L101.2,46.2 L101.5,44.1 L97.6,39.1 L102.0,36.3 L102.8,34.2 L102.0,33.0 L96.3,32.8 L97.9,28.7 L96.6,26.8 L94.3,26.6 L97.4,22.8 L97.6,20.4 L100.7,20.5 L104.7,18.4 L127.9,23.9 L140.2,18.5 L143.7,19.2 L144.9,16.0 L149.1,15.8 L149.4,13.9 L151.8,13.5 L163.1,5.0 L164.4,6.4 Z"},{"name":"Jharkhand","code":"JH","v":30,"d":"M326.9,200.1 L331.8,201.2 L331.7,204.2 L335.0,207.9 L332.4,210.4 L333.8,211.2 L334.0,213.7 L331.6,213.9 L332.3,217.3 L329.3,220.4 L330.2,222.2 L326.9,222.8 L326.3,225.4 L322.6,224.3 L323.5,227.0 L322.7,228.4 L320.8,227.6 L320.7,229.0 L316.8,227.3 L316.6,228.6 L315.0,228.3 L315.0,231.0 L309.1,232.1 L306.7,236.1 L302.4,233.0 L302.4,234.7 L299.2,235.6 L298.8,240.4 L300.2,241.7 L302.2,241.4 L305.2,244.3 L310.8,244.4 L308.9,245.6 L308.7,248.5 L312.1,250.4 L312.7,252.3 L314.5,252.4 L314.3,254.7 L315.9,255.7 L316.6,258.5 L314.3,259.3 L310.1,256.8 L309.0,257.5 L302.3,252.5 L300.8,254.6 L302.3,257.5 L301.1,258.7 L302.1,259.8 L300.0,264.0 L297.6,263.5 L298.3,261.2 L296.2,262.4 L291.4,260.3 L288.6,263.3 L286.3,261.4 L284.3,261.7 L286.6,257.8 L285.7,254.2 L272.6,256.9 L267.8,253.3 L269.1,251.1 L271.5,250.5 L274.3,245.4 L270.9,243.7 L270.2,244.9 L269.9,242.6 L268.3,241.5 L268.9,237.9 L267.2,236.9 L267.8,232.1 L266.6,233.4 L263.9,232.7 L262.6,228.5 L260.3,227.7 L259.4,224.5 L256.3,223.1 L257.2,219.0 L258.4,218.1 L257.5,215.4 L265.5,214.9 L267.6,212.8 L269.6,215.8 L272.8,214.3 L272.7,216.4 L276.1,219.6 L276.6,217.8 L278.9,217.5 L281.2,214.9 L282.9,217.9 L286.0,216.6 L286.2,217.8 L289.5,215.0 L295.9,213.9 L297.2,209.3 L300.8,211.0 L302.5,210.1 L303.9,213.5 L307.1,213.9 L306.3,216.2 L309.3,218.0 L311.8,213.5 L312.9,214.3 L314.8,213.2 L317.0,214.7 L317.4,212.7 L319.4,213.4 L321.5,204.7 L323.5,204.2 L324.0,201.6 L326.5,202.2 L326.9,200.1 Z"},{"name":"Karnataka","code":"KA","v":45,"d":"M153.2,332.0 L156.1,332.4 L155.2,333.9 L159.4,334.5 L158.4,338.8 L160.2,340.4 L156.6,347.8 L160.8,349.4 L157.8,350.8 L155.6,354.8 L155.2,355.9 L157.6,358.8 L156.2,365.4 L157.0,366.9 L155.3,368.8 L153.1,369.2 L159.2,372.6 L157.4,373.3 L157.8,379.6 L152.2,379.1 L149.5,381.3 L151.3,384.6 L149.6,385.1 L149.6,387.7 L148.6,387.8 L151.9,392.3 L151.9,394.2 L150.5,397.2 L145.3,395.9 L145.1,397.8 L146.9,398.4 L145.1,405.0 L146.9,407.4 L148.7,407.2 L147.2,408.9 L148.2,411.9 L150.9,412.3 L151.7,409.9 L153.9,410.0 L155.6,412.7 L155.7,410.2 L157.6,411.4 L157.6,413.5 L155.0,414.0 L155.8,414.4 L154.7,415.9 L156.4,417.0 L155.9,418.7 L154.5,415.9 L151.6,416.5 L149.5,415.4 L149.5,413.1 L147.3,413.3 L149.7,417.8 L149.0,421.3 L152.0,421.1 L151.2,419.3 L152.1,418.0 L152.2,419.1 L156.3,419.5 L157.2,422.5 L160.1,420.7 L161.1,421.5 L163.0,417.6 L165.7,417.4 L165.1,419.8 L166.8,418.5 L168.0,419.4 L167.4,423.3 L168.7,423.1 L169.2,424.9 L172.7,424.4 L172.3,429.4 L175.9,430.5 L173.2,436.1 L173.2,437.0 L173.8,437.6 L173.8,438.3 L171.9,436.9 L169.8,440.2 L163.1,438.2 L161.5,441.9 L159.1,442.1 L159.6,446.8 L157.0,450.8 L161.4,451.4 L162.2,452.6 L160.4,455.8 L157.3,455.9 L156.2,459.4 L153.2,458.4 L150.9,459.2 L151.0,460.1 L149.2,458.4 L147.4,458.8 L146.4,462.8 L141.7,462.1 L140.7,460.4 L139.1,461.1 L139.1,459.4 L134.0,457.5 L134.0,455.2 L129.9,455.7 L128.8,453.3 L126.5,452.9 L122.4,449.2 L121.5,446.8 L122.3,445.1 L121.0,445.9 L119.9,444.3 L120.8,443.4 L119.0,443.9 L117.8,441.7 L116.1,442.0 L115.1,439.5 L113.0,440.2 L110.0,428.8 L110.4,429.2 L110.5,430.1 L110.6,430.2 L110.7,430.2 L110.8,430.0 L110.4,429.0 L110.1,428.9 L108.6,418.9 L108.7,419.2 L108.9,419.3 L109.0,419.3 L106.8,415.9 L104.9,405.9 L104.0,405.5 L104.3,406.4 L103.6,406.4 L102.5,402.2 L99.9,401.0 L100.5,400.3 L100.1,399.1 L102.9,397.9 L103.8,393.7 L102.7,392.3 L104.1,391.6 L102.6,384.7 L100.0,384.4 L102.2,382.2 L104.5,382.4 L104.2,380.9 L105.3,380.9 L106.3,377.3 L104.6,377.1 L106.7,376.2 L106.8,373.7 L103.9,372.9 L104.6,370.6 L102.6,368.6 L103.0,367.7 L104.9,368.0 L106.4,365.5 L108.0,367.5 L110.0,366.5 L110.1,364.4 L114.0,363.4 L114.2,360.1 L116.8,360.0 L118.9,362.0 L120.1,359.8 L123.6,360.1 L125.0,358.8 L126.7,359.7 L126.4,354.0 L125.1,351.6 L126.0,349.8 L128.9,351.9 L130.3,351.0 L131.0,352.8 L134.3,352.0 L135.2,353.3 L136.3,351.8 L138.7,353.0 L137.8,347.6 L140.5,346.3 L141.1,344.5 L141.9,345.5 L142.6,344.3 L143.9,346.0 L145.6,343.2 L144.7,341.8 L147.7,341.5 L148.4,336.3 L151.0,336.9 L153.2,332.0 Z"},{"name":"Kerala","code":"KL","v":18,"d":"M115.3,439.9 L116.1,442.0 L117.8,441.7 L119.0,443.9 L120.8,443.4 L119.8,444.0 L121.0,445.9 L122.3,445.1 L121.5,446.8 L122.4,449.2 L125.0,451.8 L128.7,453.2 L130.1,455.8 L134.0,455.2 L134.2,457.6 L139.1,459.4 L139.6,461.6 L136.0,463.0 L136.3,465.0 L141.3,467.0 L139.9,470.3 L144.5,469.8 L143.9,471.0 L145.6,473.0 L144.2,473.2 L143.2,475.2 L147.4,478.2 L147.0,480.9 L145.8,480.9 L146.1,487.3 L148.6,488.9 L152.9,486.4 L153.9,488.9 L152.3,491.1 L153.6,493.6 L151.7,500.4 L154.9,500.6 L155.9,502.5 L151.4,511.8 L153.2,514.6 L151.8,517.1 L153.6,520.8 L152.3,521.7 L151.8,525.2 L148.7,523.8 L141.5,513.9 L140.5,508.8 L137.9,504.1 L136.2,493.6 L137.0,496.1 L137.6,495.3 L137.6,495.9 L137.7,496.6 L138.1,498.4 L137.6,495.4 L138.1,496.2 L138.5,496.3 L138.3,496.8 L138.3,498.6 L139.0,499.1 L138.4,500.3 L138.2,502.0 L140.3,502.3 L140.7,501.9 L139.2,501.2 L138.6,495.5 L137.6,495.0 L137.6,495.0 L137.6,494.9 L137.6,494.8 L137.5,494.6 L137.5,494.6 L137.3,494.2 L137.5,493.9 L137.3,494.1 L137.4,494.3 L137.3,494.3 L136.7,492.3 L136.6,492.2 L136.6,492.5 L136.7,493.2 L136.4,492.3 L136.7,491.4 L135.7,490.1 L135.8,491.2 L136.4,493.4 L136.0,493.3 L133.3,482.5 L133.0,482.4 L133.0,482.0 L132.9,481.9 L132.9,481.9 L132.8,483.1 L130.7,477.7 L129.8,471.1 L125.7,464.6 L123.7,458.5 L122.9,459.0 L120.3,455.7 L121.3,456.0 L121.6,455.8 L121.8,456.2 L122.0,456.3 L121.6,455.5 L119.8,454.5 L120.9,454.4 L120.5,452.7 L122.1,452.0 L119.0,452.6 L119.2,454.2 L118.7,454.5 L119.0,453.3 L113.0,440.2 L115.3,439.9 Z"},{"name":"Lakshadweep","code":"LD","v":12,"d":"M75.2,481.9 L75.4,482.2 L74.9,482.6 L75.2,481.9 Z M82.7,524.9 L82.2,526.1 L81.7,526.0 L82.3,525.8 L82.7,524.9 Z M67.5,477.1 L67.7,476.2 L67.9,476.1 L67.5,477.1 Z M77.6,469.2 L77.6,469.7 L77.3,470.3 L77.6,469.2 Z M92.6,477.4 L92.8,477.3 L93.3,477.3 L92.6,477.4 Z"},{"name":"Madhya Pradesh","code":"MP","v":55,"d":"M172.3,170.2 L175.7,172.3 L178.2,171.5 L182.9,173.7 L182.7,175.8 L185.2,178.3 L184.3,179.8 L185.3,180.2 L182.1,184.1 L183.1,185.2 L180.7,190.6 L179.8,190.0 L178.7,191.6 L179.7,194.0 L173.4,195.1 L171.1,198.7 L173.6,203.5 L171.6,204.2 L171.6,205.9 L168.9,208.6 L170.6,212.3 L169.8,215.0 L172.6,219.8 L174.6,217.5 L179.5,221.6 L182.5,218.3 L181.0,212.8 L178.8,213.5 L179.3,209.5 L176.6,206.6 L175.7,201.0 L173.3,200.4 L177.1,197.4 L179.0,199.1 L178.7,198.0 L179.9,197.7 L178.9,197.6 L178.5,196.3 L180.2,197.6 L181.1,195.2 L182.0,195.4 L181.4,197.4 L182.7,198.7 L180.9,198.5 L179.4,200.1 L180.3,201.5 L180.9,199.3 L182.3,199.3 L180.9,202.8 L183.0,202.2 L183.1,200.6 L183.4,203.2 L184.5,202.2 L185.1,203.8 L187.7,203.6 L187.7,201.2 L188.9,201.8 L187.4,200.6 L188.2,199.4 L189.0,200.8 L189.2,200.3 L191.3,200.7 L189.8,203.7 L191.3,204.3 L192.6,202.5 L197.4,204.1 L197.4,201.3 L204.3,197.7 L207.1,202.6 L204.7,204.7 L205.3,205.8 L206.9,204.4 L208.3,205.0 L208.0,204.0 L210.2,204.5 L209.9,203.8 L210.0,202.9 L211.4,204.9 L213.1,204.7 L211.8,203.3 L214.0,203.8 L214.8,202.2 L213.6,207.0 L218.2,206.8 L219.1,208.0 L219.6,206.7 L220.5,207.2 L221.5,202.7 L225.1,204.5 L226.5,202.2 L227.1,204.8 L232.1,205.7 L233.2,209.2 L237.2,209.3 L236.8,210.9 L238.0,210.2 L238.8,213.3 L240.8,213.6 L241.0,211.6 L242.8,212.6 L245.0,211.6 L247.3,213.6 L245.9,214.4 L246.8,219.5 L246.1,222.4 L245.0,222.5 L247.5,225.8 L244.5,228.1 L242.3,229.2 L232.4,227.5 L230.7,228.7 L228.1,226.5 L227.0,227.2 L228.5,230.4 L226.6,232.9 L227.2,234.5 L229.4,233.3 L232.4,234.0 L233.4,236.3 L237.0,238.0 L236.4,241.5 L232.8,242.7 L232.8,245.0 L229.9,246.6 L229.8,250.6 L227.3,253.0 L223.6,254.9 L222.4,253.3 L218.8,254.9 L218.8,257.7 L216.4,261.0 L217.0,262.0 L215.3,261.1 L213.8,264.1 L213.7,268.1 L212.1,268.8 L212.3,273.4 L211.2,276.0 L206.8,275.2 L204.4,270.6 L198.5,272.4 L195.4,270.9 L192.1,272.0 L191.3,269.5 L186.9,268.6 L186.7,270.0 L181.6,271.1 L181.9,273.1 L173.4,272.8 L172.5,270.6 L165.0,275.0 L159.0,275.5 L157.4,275.2 L156.2,272.2 L159.4,272.1 L158.3,269.0 L157.2,267.7 L154.0,267.9 L145.7,271.0 L145.5,273.5 L142.8,276.0 L142.8,278.8 L140.5,278.7 L138.6,281.0 L135.1,280.8 L133.9,275.3 L119.0,274.6 L113.6,270.4 L107.8,269.4 L105.9,262.8 L103.2,264.5 L100.8,264.2 L100.0,263.0 L101.4,261.7 L99.6,259.1 L99.5,256.4 L101.6,257.2 L103.3,255.8 L101.5,254.2 L100.4,255.3 L99.1,252.9 L100.9,253.4 L102.8,251.0 L104.8,251.1 L106.4,246.9 L104.4,245.5 L103.8,243.0 L110.9,240.1 L107.1,237.9 L108.7,235.4 L114.2,232.1 L113.7,227.5 L115.1,224.5 L113.5,220.0 L111.1,219.6 L112.9,216.1 L110.4,215.3 L112.2,212.2 L111.9,209.8 L113.4,212.5 L115.6,210.3 L112.7,209.9 L112.4,206.5 L116.0,208.6 L117.3,208.0 L118.0,205.0 L121.1,205.1 L119.7,208.0 L122.3,208.5 L120.4,209.5 L118.8,207.6 L118.9,211.2 L129.5,211.1 L130.7,216.3 L129.6,217.0 L128.7,216.0 L127.6,217.3 L129.3,220.3 L127.9,222.4 L129.4,223.6 L127.1,225.6 L126.6,224.4 L125.1,225.2 L124.0,224.1 L123.0,226.6 L125.1,228.9 L126.9,229.6 L127.2,226.9 L128.4,227.8 L131.8,226.3 L131.5,224.6 L134.5,223.2 L135.3,218.7 L135.9,220.9 L140.2,220.6 L141.2,221.9 L143.9,219.6 L144.1,221.8 L147.4,222.5 L148.2,221.1 L146.4,218.6 L146.0,214.8 L147.7,214.6 L148.6,216.2 L150.2,214.1 L149.6,211.4 L145.8,209.4 L148.3,208.3 L146.7,205.7 L155.9,203.7 L155.3,198.0 L153.9,197.8 L152.6,200.0 L145.2,199.9 L141.8,197.5 L140.4,192.2 L142.2,189.2 L144.8,188.5 L147.2,185.0 L151.2,182.2 L162.9,176.2 L164.3,174.1 L167.5,173.7 L167.9,171.5 L172.3,170.2 Z"},{"name":"Maharashtra","code":"MH","v":60,"d":"M105.9,263.1 L107.3,265.1 L107.0,268.6 L108.3,269.7 L113.6,270.4 L120.4,275.0 L133.9,275.3 L135.1,278.8 L134.5,280.0 L137.0,281.0 L139.9,280.2 L140.5,278.7 L142.8,278.8 L142.8,276.0 L145.5,273.5 L145.7,271.0 L154.0,267.9 L157.2,267.7 L158.3,269.0 L159.4,272.1 L156.2,272.2 L157.4,275.2 L159.0,275.5 L165.0,275.0 L172.5,270.6 L173.4,272.8 L181.9,273.1 L181.6,271.1 L186.7,270.0 L186.9,268.6 L191.3,269.5 L192.1,272.0 L195.4,270.9 L198.5,272.4 L204.4,270.6 L206.8,275.2 L211.4,276.5 L207.3,280.6 L207.7,283.7 L209.1,283.7 L209.8,288.5 L208.1,289.8 L210.5,290.0 L210.4,295.2 L206.5,297.0 L206.6,298.8 L209.2,300.3 L208.8,302.9 L206.8,302.9 L208.4,304.1 L206.7,305.5 L209.2,305.0 L211.2,307.5 L211.1,309.0 L214.0,309.9 L215.1,311.8 L213.3,312.5 L214.3,313.8 L212.7,315.2 L210.3,314.8 L209.6,313.0 L208.0,314.3 L204.5,321.0 L205.8,324.3 L204.1,326.4 L201.8,326.9 L198.2,323.9 L198.9,320.3 L197.6,320.0 L197.6,318.7 L199.0,317.4 L199.5,313.0 L196.3,309.4 L191.0,311.2 L187.2,309.0 L186.0,311.9 L182.3,310.2 L182.5,308.3 L180.6,308.2 L180.4,306.2 L174.4,305.5 L171.3,303.2 L172.3,305.8 L170.7,308.0 L171.3,312.0 L169.2,312.8 L169.0,316.2 L166.9,316.1 L165.2,314.2 L163.7,314.9 L164.5,315.6 L163.5,319.0 L162.0,320.2 L165.1,324.1 L163.3,324.4 L161.6,326.9 L161.6,329.2 L159.3,329.4 L158.1,331.7 L158.8,333.9 L157.0,334.9 L155.3,333.9 L156.1,332.4 L154.5,331.2 L151.0,336.9 L148.4,336.3 L147.7,341.5 L144.7,341.8 L145.6,343.2 L143.9,346.0 L142.6,344.3 L141.9,345.5 L141.1,344.5 L140.5,346.3 L137.8,347.6 L138.7,353.0 L136.3,351.8 L135.2,353.3 L134.3,352.0 L131.0,352.8 L130.3,351.0 L128.9,351.9 L126.0,349.8 L125.1,351.6 L126.4,354.0 L126.7,359.7 L125.0,358.8 L123.6,360.1 L120.1,359.8 L118.9,362.0 L116.8,360.0 L114.2,360.1 L114.0,363.4 L110.1,364.4 L110.0,366.5 L108.0,367.5 L106.4,365.5 L104.9,368.0 L102.9,367.8 L104.6,370.6 L104.0,373.0 L107.0,374.3 L106.6,376.4 L104.6,377.1 L106.3,377.3 L105.3,380.9 L104.2,380.9 L104.5,382.4 L102.2,382.2 L98.8,385.7 L96.2,382.0 L92.8,383.4 L89.1,377.1 L88.2,370.4 L86.7,368.3 L88.1,367.5 L86.7,366.6 L87.0,362.5 L85.7,358.5 L86.3,358.8 L86.8,358.2 L84.6,353.3 L85.5,353.1 L84.2,351.2 L82.9,342.9 L83.6,343.2 L83.6,343.1 L81.9,340.9 L82.1,339.0 L80.2,335.6 L80.8,334.5 L82.9,336.9 L82.7,335.4 L82.1,334.2 L82.8,334.3 L82.9,333.6 L82.1,334.1 L81.8,334.8 L79.9,333.1 L80.2,329.5 L78.9,326.5 L79.2,324.4 L81.1,324.4 L79.8,322.6 L80.6,321.2 L81.0,321.4 L81.6,321.1 L81.9,320.8 L81.9,320.7 L80.8,319.6 L78.1,322.8 L78.5,317.2 L77.9,318.2 L77.6,317.5 L77.9,317.4 L77.9,316.9 L78.7,315.9 L78.7,315.6 L77.7,317.0 L77.8,310.6 L76.6,310.4 L76.6,306.3 L75.5,304.4 L76.1,302.4 L77.2,303.0 L76.9,299.0 L78.6,298.8 L79.2,297.3 L80.9,297.5 L82.1,300.2 L84.4,300.6 L86.6,297.6 L88.6,297.7 L88.0,294.1 L89.9,291.2 L88.2,289.2 L89.1,287.9 L92.7,290.8 L95.6,289.8 L95.3,288.3 L97.5,287.4 L96.7,282.8 L94.5,282.2 L94.1,280.3 L92.6,280.4 L91.3,279.2 L95.3,279.2 L95.5,277.3 L97.4,276.8 L97.5,274.7 L99.5,273.2 L103.5,273.3 L104.0,272.1 L96.0,273.0 L94.7,270.5 L96.6,269.0 L95.1,266.7 L105.9,263.1 Z"},{"name":"Manipur","code":"MN","v":16,"d":"M446.9,192.6 L446.6,196.1 L448.7,197.1 L447.1,201.8 L449.8,203.3 L449.7,205.4 L442.7,218.6 L439.9,227.9 L436.4,226.0 L434.0,226.4 L433.0,224.9 L428.8,226.0 L426.2,222.9 L424.5,224.6 L424.4,223.4 L421.9,224.2 L419.8,222.9 L422.1,209.6 L423.5,209.5 L427.0,200.9 L428.2,200.0 L430.5,202.0 L434.4,195.1 L437.4,194.5 L442.4,196.5 L446.9,192.6 Z"},{"name":"Meghalaya","code":"ML","v":18,"d":"M400.8,184.8 L401.9,186.8 L408.4,185.3 L405.9,187.8 L407.1,188.6 L406.0,193.1 L409.8,191.5 L413.0,195.2 L414.3,194.6 L412.9,197.0 L416.5,199.6 L416.9,201.8 L413.8,203.7 L412.1,203.2 L410.5,205.3 L404.5,202.3 L397.2,203.6 L396.8,202.5 L394.3,203.4 L391.0,202.0 L377.0,203.2 L366.6,200.3 L367.2,195.5 L369.7,194.3 L367.6,191.7 L371.4,187.5 L377.5,186.5 L378.1,188.8 L379.2,187.6 L380.0,188.7 L385.3,187.8 L386.8,188.9 L386.3,190.2 L389.6,189.5 L390.1,192.1 L392.0,189.9 L393.8,189.8 L395.2,189.2 L394.4,189.2 L396.1,186.1 L397.7,188.6 L398.7,185.7 L400.8,184.8 Z"},{"name":"Mizoram","code":"MZ","v":15,"d":"M416.8,217.0 L420.6,217.6 L419.8,222.9 L421.9,224.2 L425.9,224.0 L427.7,231.1 L426.4,237.4 L426.9,241.5 L425.2,244.1 L422.5,243.3 L423.1,245.7 L421.8,249.7 L423.7,258.3 L422.8,259.9 L421.0,259.5 L420.4,263.6 L419.5,262.7 L418.7,264.3 L418.0,262.1 L415.4,260.4 L413.6,263.8 L412.2,250.4 L409.6,245.4 L409.4,239.6 L410.2,239.5 L407.7,228.6 L408.9,226.7 L408.3,220.2 L410.4,220.2 L411.2,222.5 L416.2,215.1 L416.8,217.0 Z"},{"name":"Nagaland","code":"NL","v":16,"d":"M457.4,166.8 L458.1,173.7 L455.2,178.0 L456.4,179.4 L456.1,184.7 L457.2,185.2 L454.5,188.5 L455.0,191.3 L452.5,195.1 L447.9,197.0 L446.6,196.1 L446.9,192.6 L442.5,196.5 L437.4,194.5 L434.4,195.1 L430.6,202.0 L428.8,201.2 L428.0,197.6 L425.8,195.5 L433.3,187.4 L433.7,190.3 L436.8,188.3 L437.2,183.5 L441.8,176.1 L442.5,177.9 L445.0,174.0 L450.0,172.0 L452.8,168.6 L454.4,169.1 L457.4,166.8 Z"},{"name":"Orissa","code":"OD","v":25,"d":"M302.3,252.5 L306.4,254.8 L309.0,257.5 L309.8,256.7 L312.4,258.2 L313.7,260.6 L318.0,261.8 L319.1,265.9 L322.5,264.2 L323.2,267.1 L326.4,268.6 L326.7,270.8 L320.4,272.5 L315.5,278.7 L318.0,285.8 L315.6,286.8 L314.4,289.8 L319.3,288.0 L314.0,292.4 L314.6,295.2 L309.4,298.5 L309.9,298.6 L309.4,299.4 L309.5,299.5 L309.6,299.7 L309.5,299.4 L309.9,299.3 L310.1,298.4 L311.1,297.7 L310.4,298.3 L309.8,299.5 L309.0,300.4 L308.6,300.5 L308.2,302.0 L306.5,300.4 L306.5,300.6 L306.2,300.4 L305.8,300.6 L305.6,301.1 L307.4,302.1 L307.0,302.5 L307.8,302.5 L300.0,304.8 L291.8,308.8 L280.9,318.6 L279.0,317.7 L277.8,318.3 L279.0,319.4 L277.7,320.5 L277.3,319.5 L275.7,321.1 L274.8,320.4 L275.0,322.4 L273.0,324.9 L269.1,325.6 L265.8,324.4 L261.3,317.8 L259.8,320.6 L258.6,319.4 L258.5,321.8 L256.0,320.9 L257.5,323.9 L254.3,326.1 L253.0,325.1 L251.0,327.7 L252.3,329.6 L251.0,331.3 L251.7,332.7 L249.1,333.0 L247.4,331.4 L244.5,335.5 L241.9,329.6 L240.0,332.0 L239.5,333.8 L240.5,334.0 L239.0,336.1 L240.0,337.3 L238.4,340.1 L234.3,338.7 L227.3,343.4 L223.4,343.5 L225.8,334.9 L229.5,333.2 L232.9,329.1 L231.9,327.4 L235.2,326.2 L237.9,322.4 L236.6,318.3 L236.9,312.7 L234.2,311.1 L234.9,305.7 L231.3,303.3 L231.6,300.9 L232.9,299.6 L234.3,301.4 L237.8,301.6 L239.6,304.8 L241.3,303.4 L243.9,304.2 L243.8,306.0 L245.8,304.8 L245.8,301.8 L240.5,300.4 L241.1,293.4 L239.3,291.0 L239.7,284.7 L241.6,285.8 L244.6,279.6 L250.0,279.1 L252.8,280.5 L255.3,277.3 L255.4,275.3 L257.6,275.8 L256.5,273.0 L257.2,270.7 L259.0,270.5 L257.9,269.5 L258.7,267.5 L260.7,266.3 L259.8,262.7 L261.4,259.4 L267.8,256.3 L267.6,253.2 L272.6,256.9 L285.7,254.2 L286.6,257.8 L284.5,261.8 L286.3,261.4 L288.6,263.3 L290.8,260.4 L296.2,262.4 L298.3,261.2 L297.6,263.5 L300.0,264.0 L302.3,257.5 L300.9,254.2 L302.3,252.5 Z"},{"name":"Puducherry","code":"PY","v":22,"d":"M193.9,454.8 L195.5,456.4 L197.2,455.8 L196.6,458.3 L194.2,457.2 L195.3,456.7 L193.9,454.8 Z M195.0,475.3 L197.5,474.2 L197.0,477.3 L197.4,477.3 L196.8,477.3 L195.0,475.3 Z M121.8,451.8 L119.7,454.3 L120.4,455.6 L120.3,455.6 L119.0,452.7 L121.8,451.8 Z M236.8,364.2 L238.8,363.9 L239.0,364.3 L238.0,364.4 L238.1,364.9 L236.8,364.2 Z"},{"name":"Punjab","code":"PB","v":82,"d":"M130.0,61.0 L131.0,64.0 L125.8,67.5 L126.5,68.8 L125.1,70.4 L130.4,72.9 L135.1,85.3 L137.2,85.0 L138.4,82.7 L139.5,85.7 L142.8,86.8 L142.5,91.0 L146.5,95.1 L143.9,96.0 L146.8,97.3 L147.9,102.8 L145.0,101.9 L144.3,103.9 L141.5,105.2 L143.0,106.3 L142.4,108.7 L139.9,108.3 L139.1,106.4 L137.7,108.2 L135.7,107.2 L136.5,108.3 L135.0,111.6 L136.3,112.8 L132.9,115.1 L130.2,115.1 L128.3,113.6 L124.9,115.2 L122.8,113.9 L119.0,118.9 L117.9,116.7 L119.2,115.0 L118.3,113.3 L117.9,114.4 L116.8,114.0 L116.7,111.9 L115.1,113.0 L111.9,110.4 L109.2,112.1 L96.5,110.8 L97.8,106.7 L96.2,102.9 L107.8,89.8 L110.1,89.3 L106.9,88.5 L107.0,85.9 L109.2,82.3 L107.9,81.5 L108.5,80.3 L107.1,77.3 L108.5,74.2 L113.8,70.7 L119.3,70.3 L121.4,67.5 L120.8,65.4 L123.3,65.5 L123.7,66.7 L130.0,61.0 Z"},{"name":"Rajasthan","code":"RJ","v":85,"d":"M96.4,110.7 L107.1,111.3 L107.7,112.8 L106.2,114.3 L108.6,115.0 L107.9,118.6 L108.7,119.3 L107.3,120.8 L108.4,123.1 L112.6,121.7 L116.6,124.9 L122.0,124.4 L121.4,126.7 L122.6,129.1 L123.9,129.2 L123.2,130.8 L124.7,136.8 L128.3,140.7 L130.9,141.5 L133.8,145.5 L131.1,146.7 L132.8,147.1 L130.9,149.8 L131.6,151.1 L136.0,151.6 L134.8,148.5 L135.2,147.4 L137.9,148.0 L137.2,146.6 L138.2,146.1 L137.1,145.0 L140.2,145.6 L139.9,147.6 L141.3,147.8 L141.3,149.1 L143.4,148.2 L143.2,146.8 L145.9,144.4 L147.4,144.6 L148.5,145.8 L147.5,155.1 L150.5,153.5 L149.8,152.0 L154.1,152.3 L154.8,157.5 L156.5,160.0 L159.5,161.1 L160.5,163.8 L157.6,165.8 L161.9,167.2 L156.3,170.2 L156.7,172.5 L157.6,170.6 L159.4,170.8 L161.9,168.8 L166.5,170.3 L168.0,168.5 L170.5,169.1 L169.1,171.6 L167.8,171.5 L167.5,173.7 L164.3,174.1 L162.9,176.2 L151.2,182.2 L147.2,185.0 L144.8,188.5 L142.2,189.2 L140.4,192.2 L141.8,197.5 L145.2,199.9 L152.6,200.0 L153.9,197.8 L155.3,198.0 L155.9,203.7 L146.7,205.7 L148.3,208.3 L145.8,209.4 L149.6,211.4 L150.2,214.1 L148.6,216.2 L147.7,214.6 L146.0,214.8 L146.4,218.6 L148.2,221.1 L147.4,222.5 L144.1,221.8 L143.9,219.6 L141.2,221.9 L140.2,220.6 L135.9,220.9 L135.3,218.7 L134.5,223.2 L131.5,224.6 L131.8,226.3 L128.4,227.8 L127.2,226.9 L126.9,229.6 L125.1,228.9 L123.0,226.6 L124.0,224.1 L125.1,225.2 L126.6,224.4 L127.1,225.6 L129.4,223.6 L127.9,222.4 L129.3,220.3 L127.6,217.3 L128.7,216.0 L129.6,217.0 L130.7,216.3 L129.5,211.1 L118.9,211.2 L118.8,207.6 L120.4,209.5 L122.3,208.5 L119.7,208.0 L121.1,205.1 L118.0,205.0 L117.3,208.0 L116.0,208.6 L112.7,206.4 L112.7,209.9 L115.6,210.6 L113.4,212.5 L111.9,209.8 L112.2,212.2 L110.4,215.3 L112.9,216.1 L111.1,219.6 L113.5,220.0 L115.1,224.5 L113.7,227.5 L114.2,232.1 L108.7,235.4 L107.1,237.9 L110.9,240.1 L103.8,243.0 L97.8,237.0 L96.5,237.7 L95.5,235.6 L92.1,235.5 L92.6,232.3 L90.1,232.4 L90.0,230.7 L87.5,229.1 L88.6,226.4 L87.7,222.6 L85.5,224.8 L82.8,221.5 L85.3,218.1 L82.8,217.5 L83.0,215.6 L81.4,216.0 L80.1,218.8 L76.8,218.1 L76.2,216.3 L73.7,215.4 L72.3,217.3 L71.9,215.4 L68.7,213.9 L70.4,213.2 L67.2,213.3 L65.3,211.5 L63.5,213.1 L62.3,212.1 L62.0,213.5 L61.0,212.2 L52.5,213.4 L49.5,212.3 L45.7,203.2 L42.0,198.5 L41.8,192.6 L35.3,192.5 L32.2,187.8 L33.4,176.2 L27.4,175.5 L21.8,171.4 L23.5,164.2 L30.8,157.0 L33.2,151.7 L36.8,148.4 L40.1,148.1 L43.4,153.9 L45.5,154.3 L62.7,149.3 L63.3,146.1 L67.6,141.7 L71.0,133.9 L80.4,128.9 L86.0,118.7 L88.0,111.4 L97.7,106.5 L96.4,110.7 Z"},{"name":"Sikkim","code":"SK","v":15,"d":"M346.4,146.6 L349.5,148.2 L350.4,150.6 L348.5,156.8 L350.9,162.2 L347.9,165.0 L345.0,164.0 L342.8,166.1 L337.1,165.0 L335.8,163.5 L336.3,158.2 L338.9,151.6 L337.6,149.5 L342.1,148.9 L346.4,146.6 Z"},{"name":"Tamil Nadu","code":"TN","v":38,"d":"M199.8,425.4 L205.5,428.5 L205.4,427.4 L205.5,427.3 L205.5,427.1 L205.5,427.1 L205.5,427.0 L205.8,430.3 L204.3,439.8 L202.6,445.7 L200.3,448.1 L201.0,447.9 L199.0,450.4 L200.1,449.8 L197.2,455.8 L195.5,456.4 L195.7,454.9 L193.9,455.1 L195.3,456.7 L194.2,457.2 L196.6,458.3 L195.8,463.0 L197.2,466.9 L196.7,469.2 L197.5,474.2 L195.4,474.0 L195.0,475.3 L197.4,477.3 L198.0,487.1 L197.2,487.6 L195.6,487.6 L196.2,487.1 L193.7,486.0 L193.4,486.8 L192.4,486.9 L192.4,487.0 L194.2,487.4 L194.4,487.1 L194.6,487.4 L195.5,487.6 L191.9,487.1 L193.0,486.5 L192.3,486.2 L188.0,487.9 L186.9,490.1 L187.6,492.2 L181.3,502.7 L183.6,505.9 L186.3,506.6 L180.2,506.9 L172.3,510.3 L168.9,514.3 L168.7,516.4 L169.4,516.1 L170.0,516.8 L167.9,518.7 L167.7,520.0 L168.0,520.1 L168.4,519.8 L167.8,519.8 L168.2,519.7 L168.2,519.0 L168.4,519.9 L168.3,521.7 L167.2,524.1 L158.9,528.6 L158.5,529.7 L154.5,528.9 L150.7,525.5 L151.8,525.2 L152.3,521.7 L153.6,520.9 L151.8,517.1 L153.2,514.6 L151.4,511.8 L155.9,502.5 L154.9,500.6 L151.7,500.4 L153.6,493.6 L152.3,491.1 L153.9,488.9 L152.9,486.4 L148.6,488.9 L146.1,487.3 L145.8,480.9 L147.0,480.9 L147.4,478.2 L143.2,475.2 L144.2,473.2 L145.0,473.3 L145.6,473.0 L143.9,471.0 L144.5,469.8 L139.9,470.3 L141.3,467.0 L136.3,465.0 L136.0,463.0 L140.7,460.4 L141.7,462.1 L146.4,462.8 L147.4,458.8 L149.2,458.4 L151.0,460.1 L150.9,459.2 L153.2,458.4 L156.2,459.4 L157.3,455.9 L160.4,455.8 L162.1,452.5 L157.0,450.0 L159.4,447.7 L159.1,442.1 L161.5,441.9 L163.1,438.2 L164.8,437.8 L165.8,439.4 L166.9,438.5 L169.8,440.2 L169.3,441.6 L173.8,442.9 L174.3,440.6 L175.4,441.5 L177.0,437.1 L176.5,435.9 L178.0,434.4 L180.9,433.9 L181.0,435.1 L181.7,435.1 L182.7,434.0 L185.6,435.4 L186.7,432.9 L188.2,433.6 L190.2,431.9 L189.4,429.7 L190.3,429.3 L192.9,430.8 L194.3,430.1 L195.6,431.8 L196.3,431.2 L195.2,430.3 L198.7,429.1 L200.6,426.2 L199.8,425.4 Z"},{"name":"Tripura","code":"TR","v":18,"d":"M406.4,215.0 L407.9,217.6 L406.9,220.3 L408.8,221.4 L408.7,227.5 L407.1,231.6 L406.3,230.0 L404.5,231.8 L402.6,230.3 L402.8,234.9 L399.4,239.1 L400.5,242.4 L396.8,245.2 L393.4,238.8 L393.5,243.0 L392.4,242.4 L391.8,237.2 L389.1,232.7 L389.9,231.0 L389.0,230.0 L390.1,230.0 L391.1,225.4 L392.7,225.5 L392.7,223.0 L396.4,223.5 L397.6,220.6 L399.2,222.3 L398.9,220.3 L401.6,222.4 L401.9,218.6 L405.3,217.7 L406.4,215.0 Z"},{"name":"Uttar Pradesh","code":"UP","v":78,"d":"M159.0,102.4 L164.9,105.5 L162.5,108.3 L161.0,112.7 L162.6,116.3 L165.3,115.9 L165.9,118.9 L171.7,114.2 L173.1,114.6 L176.3,118.6 L181.7,120.7 L178.2,123.3 L180.5,124.4 L181.3,126.5 L185.2,126.9 L185.7,128.9 L189.1,130.0 L190.0,132.1 L196.1,131.5 L196.3,133.1 L197.5,132.4 L199.4,134.8 L202.0,132.7 L208.8,138.0 L208.5,135.8 L209.6,135.4 L215.5,139.8 L220.5,141.6 L222.3,146.0 L224.5,145.4 L225.0,146.9 L231.9,151.3 L235.0,150.0 L241.5,154.7 L245.9,153.8 L246.3,158.0 L254.0,159.0 L256.2,161.3 L257.8,159.8 L257.4,158.5 L261.2,158.7 L266.3,161.4 L266.0,162.7 L267.5,164.2 L266.7,165.9 L268.1,165.8 L268.6,169.7 L271.8,170.3 L271.7,172.6 L272.8,172.4 L274.7,174.8 L269.1,174.5 L268.5,176.4 L266.1,176.9 L266.1,178.2 L270.6,179.6 L270.4,182.1 L267.9,182.2 L267.8,183.4 L270.5,186.9 L276.7,189.1 L278.4,192.0 L276.0,192.9 L273.3,191.7 L272.6,193.3 L269.3,192.1 L265.0,197.6 L256.5,202.4 L256.8,208.4 L260.0,213.1 L259.2,215.0 L257.4,215.5 L258.4,218.1 L254.0,226.6 L249.8,227.4 L245.1,222.7 L246.8,219.5 L245.8,217.7 L245.9,214.4 L247.4,214.5 L246.8,212.7 L241.2,211.5 L240.8,213.6 L238.8,213.3 L238.0,210.2 L236.8,210.9 L237.2,209.3 L233.2,209.2 L232.1,205.7 L227.1,204.8 L226.5,202.2 L225.1,204.5 L221.5,202.7 L220.5,207.2 L219.6,206.7 L219.1,208.0 L218.2,206.8 L213.6,207.0 L214.8,202.2 L214.0,203.8 L211.8,203.3 L213.1,204.7 L211.4,204.9 L210.0,202.9 L210.2,204.5 L208.0,204.0 L208.3,205.0 L204.7,205.5 L207.1,202.6 L204.3,197.7 L197.4,201.3 L197.5,204.0 L192.6,202.5 L191.3,204.3 L189.8,203.7 L191.3,200.7 L189.0,200.8 L188.0,199.4 L187.4,200.7 L188.8,200.7 L188.9,201.8 L187.7,201.2 L188.2,203.4 L185.2,203.8 L184.5,202.2 L183.4,203.2 L183.1,200.6 L183.0,202.2 L180.9,202.7 L182.2,199.2 L180.9,199.3 L180.3,201.5 L179.4,200.2 L180.9,198.5 L182.7,198.7 L181.4,197.4 L181.8,195.2 L180.1,196.2 L180.6,197.0 L180.2,197.6 L178.5,196.3 L179.9,197.7 L178.7,198.0 L179.0,199.1 L177.1,197.4 L173.3,200.4 L175.7,201.0 L176.6,206.6 L179.3,209.5 L178.8,213.5 L181.0,212.8 L182.5,218.3 L179.5,221.6 L174.6,217.5 L173.0,219.7 L171.9,219.2 L172.2,217.7 L169.7,214.9 L170.6,212.3 L168.9,208.6 L171.6,205.9 L171.6,204.2 L173.6,203.5 L171.1,198.7 L173.4,195.1 L179.7,194.0 L178.7,191.6 L179.8,190.0 L180.7,190.6 L183.1,185.2 L182.1,184.1 L185.2,180.7 L184.3,179.8 L185.2,178.3 L182.7,175.8 L182.9,173.7 L178.2,171.5 L175.7,172.3 L172.0,170.1 L169.6,170.8 L170.5,169.1 L169.7,168.5 L166.5,170.3 L161.9,168.8 L156.4,172.0 L156.3,170.2 L161.6,167.9 L161.9,167.2 L157.9,166.3 L160.5,163.8 L159.5,161.1 L156.5,160.0 L154.4,155.9 L153.8,152.2 L158.2,149.5 L157.1,146.9 L158.3,143.8 L157.1,143.4 L157.2,140.6 L154.1,137.8 L154.6,134.8 L152.4,133.2 L152.8,129.3 L151.2,127.4 L151.7,123.0 L150.6,117.9 L152.3,111.7 L153.7,109.3 L156.2,108.2 L159.0,102.4 Z"},{"name":"Uttaranchal","code":"UK","v":35,"d":"M183.8,82.2 L190.0,90.4 L193.0,92.2 L197.5,91.5 L201.7,95.3 L203.8,95.6 L203.6,99.2 L208.9,101.6 L209.9,100.9 L217.2,105.4 L206.2,115.0 L206.9,118.0 L204.1,120.9 L205.0,125.5 L202.4,127.4 L199.8,134.8 L197.5,132.4 L196.3,133.1 L196.1,131.5 L190.0,132.1 L189.1,130.0 L185.7,128.9 L185.2,126.9 L181.3,126.5 L180.5,124.4 L178.2,123.3 L181.7,120.7 L176.3,118.6 L174.1,115.1 L171.7,114.2 L165.9,118.9 L165.3,115.9 L162.6,116.3 L161.0,112.7 L162.5,108.3 L164.9,105.5 L158.7,102.3 L162.9,100.1 L160.8,95.5 L161.8,93.4 L162.5,93.8 L161.6,91.9 L163.0,92.0 L162.7,89.9 L164.2,88.2 L172.1,85.6 L174.0,87.2 L179.6,87.2 L182.0,89.1 L183.0,88.9 L181.7,84.9 L183.8,82.2 Z"},{"name":"West Bengal","code":"WB","v":28,"d":"M335.9,163.4 L342.8,166.1 L345.5,163.9 L350.2,165.6 L350.3,168.6 L351.1,167.7 L352.9,168.8 L354.7,171.3 L358.8,170.2 L363.4,171.8 L363.1,173.0 L367.0,173.3 L367.2,178.2 L364.6,181.0 L364.9,183.5 L363.2,182.4 L362.5,184.9 L363.5,185.6 L361.8,187.5 L355.3,184.2 L354.0,179.1 L351.8,177.9 L351.1,179.7 L353.6,181.9 L350.5,181.2 L349.8,182.3 L346.0,177.8 L342.9,176.3 L342.5,174.7 L341.9,175.4 L341.2,177.6 L343.7,178.0 L344.4,179.9 L343.3,179.6 L341.5,182.6 L338.6,184.0 L338.7,186.3 L337.0,188.5 L337.5,190.7 L340.1,190.5 L344.7,196.2 L349.2,196.0 L349.8,199.0 L352.6,200.3 L351.1,202.7 L343.0,202.2 L342.3,207.0 L341.0,208.5 L339.4,206.7 L337.9,207.1 L338.5,208.6 L335.7,212.3 L341.1,217.7 L347.9,219.8 L347.3,222.9 L348.6,225.3 L345.3,227.7 L345.0,231.9 L349.0,234.7 L347.7,239.3 L352.3,240.1 L349.8,244.1 L351.9,247.2 L351.5,250.7 L349.1,249.3 L350.9,250.4 L351.3,251.5 L351.7,251.6 L351.4,252.4 L350.7,252.5 L350.2,252.9 L349.8,253.6 L349.9,255.0 L348.5,252.6 L347.2,253.3 L347.2,253.1 L347.1,253.0 L347.1,252.9 L346.9,252.8 L347.0,252.3 L347.0,252.0 L346.9,252.8 L347.2,253.3 L348.7,253.6 L348.7,253.9 L349.1,254.8 L349.4,255.1 L349.9,255.1 L349.8,255.9 L350.1,256.3 L350.3,256.5 L350.3,256.5 L350.3,256.4 L349.9,256.3 L349.4,256.4 L347.9,259.6 L347.4,259.3 L346.8,259.2 L346.3,259.2 L346.6,258.7 L347.1,257.7 L347.2,257.1 L346.8,256.8 L346.2,259.1 L346.3,259.3 L346.9,259.5 L346.0,261.2 L345.7,260.3 L345.2,259.7 L345.7,260.3 L345.6,260.8 L346.0,261.3 L346.1,262.3 L346.2,262.3 L346.3,262.4 L345.6,262.0 L345.8,265.0 L344.7,263.8 L345.2,265.2 L345.0,265.2 L344.7,265.1 L344.7,265.2 L344.4,266.1 L343.9,265.6 L344.3,265.0 L344.4,264.7 L344.3,264.4 L343.9,263.9 L344.3,263.5 L344.6,263.7 L344.7,263.7 L344.8,263.4 L344.9,262.9 L344.9,262.6 L343.8,263.9 L344.3,264.9 L344.0,264.9 L343.7,265.0 L343.6,265.1 L343.5,265.3 L343.5,264.1 L343.4,264.0 L343.0,264.0 L343.3,263.1 L342.4,265.5 L342.0,265.2 L342.4,264.9 L342.2,263.9 L341.9,263.9 L342.1,267.2 L341.5,266.7 L341.8,265.3 L341.7,265.0 L341.5,264.8 L341.5,266.0 L340.0,265.5 L340.8,266.2 L339.9,267.0 L340.0,267.4 L340.3,267.9 L339.8,267.1 L340.3,268.0 L340.1,268.5 L338.3,265.6 L339.3,261.9 L338.9,260.1 L336.7,259.3 L337.3,257.5 L336.3,259.1 L335.2,258.6 L334.6,255.5 L334.2,255.0 L333.5,254.9 L334.5,258.3 L335.2,259.2 L335.6,259.5 L337.8,259.8 L338.7,261.4 L336.5,263.1 L336.0,262.1 L335.4,261.4 L334.9,261.3 L336.4,263.1 L334.3,267.1 L326.7,270.8 L326.1,267.9 L323.0,266.9 L322.5,264.2 L319.1,265.9 L318.9,262.5 L313.7,260.6 L313.9,259.2 L316.6,257.7 L314.5,255.2 L314.5,252.4 L312.7,252.3 L312.1,250.4 L308.7,248.5 L308.9,245.6 L310.4,245.2 L310.8,244.4 L305.1,244.3 L302.2,241.4 L300.2,241.7 L298.7,239.1 L299.8,237.1 L299.3,235.2 L302.4,234.7 L302.2,233.0 L306.7,236.1 L309.1,232.1 L315.0,231.0 L315.0,228.3 L316.6,228.6 L316.8,227.3 L320.7,229.0 L320.8,227.6 L322.7,228.4 L323.5,227.0 L322.6,224.3 L326.3,225.4 L326.9,222.8 L328.3,223.4 L328.2,222.1 L330.3,222.1 L329.3,220.4 L332.3,217.3 L331.6,213.9 L334.0,213.7 L333.8,211.2 L332.4,210.4 L335.0,207.9 L331.6,204.0 L333.1,200.6 L331.4,198.1 L334.2,195.7 L336.0,196.6 L336.7,196.3 L336.3,192.7 L333.8,191.2 L334.0,189.6 L332.2,188.3 L332.8,185.9 L340.4,180.0 L338.5,177.4 L339.4,176.2 L337.3,176.5 L338.5,170.2 L335.3,165.4 L335.9,163.4 Z"}]};
+</script>
+<script>
+const titles = {
+  dashboard:{eyebrow:'Overview', title:'ParliamentOS Dashboard'},
+  priority:{eyebrow:'AI Prioritization', title:'National Priority Engine'},
+  pulse:{eyebrow:'Public Consultation', title:'Citizen Pulse — Water Security Bill'},
+  simulator:{eyebrow:'Predictive Modeling', title:'Policy Simulator'},
+  debate:{eyebrow:'Live Session', title:'Debate Intelligence'},
+};
+// ---- Reusable hex-lattice "state map" renderer (signature element) ----
+function renderHexLattice(containerId, states, palette){
+  palette = palette || 'severity';
+  const cols = 8, hexW = 54, hexH = 48, vStep = hexH*0.75;
+  const rows = Math.ceil(states.length/cols);
+  const svgW = cols*hexW + hexW/2 + 20;
+  const svgH = rows*vStep + hexH + 20;
+  const colorFor = v => {
+    if(palette==='benefit'){
+      return v>=75?'#189A72':v>=50?'#3568F2':v>=30?'#C97F17':'#D9E0EB';
+    }
+    return v>=80?'#D14343':v>=55?'#C97F17':v>=30?'#3568F2':'#D9E0EB';
+  };
+  const textFor = v => (palette==='benefit' ? v>=50 : v>=55) ?'#fff':'#3B4454';
+  let hexes = '';
+  states.forEach((s,i)=>{
+    const col = i % cols, row = Math.floor(i/cols);
+    const x = col*hexW + (row%2? hexW/2:0) + 30;
+    const y = row*vStep + 30;
+    const r = hexH/2 - 3;
+    const pts = [0,60,120,180,240,300].map(a=>{
+      const rad = Math.PI/180*a;
+      return (x+r*Math.sin(rad)).toFixed(1)+','+(y-r*Math.cos(rad)).toFixed(1);
+    }).join(' ');
+    hexes += `<polygon points="${pts}" fill="${colorFor(s.v)}" fill-opacity="0.92" stroke="#fff" stroke-width="2"/>`;
+    hexes += `<text x="${x}" y="${y-2}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9.5" font-weight="600" fill="${textFor(s.v)}">${s.code}</text>`;
+    hexes += `<text x="${x}" y="${y+9}" text-anchor="middle" font-family="IBM Plex Mono" font-size="7.5" fill="${textFor(s.v)}" opacity="0.85">${s.v}</text>`;
+  });
+  document.getElementById(containerId).innerHTML =
+    `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" style="max-width:520px; height:auto;">${hexes}</svg>`;
+}
+
+renderHexLattice('affectedHexMap', [
+  {code:'PB',v:92},{code:'RJ',v:95},{code:'MH',v:78},{code:'KA',v:62},
+  {code:'UP',v:88},{code:'MP',v:70},{code:'TN',v:58},{code:'GJ',v:82},
+  {code:'BR',v:52},{code:'WB',v:40},{code:'TG',v:66},{code:'AP',v:60},
+  {code:'HR',v:90},{code:'CG',v:35},{code:'OD',v:38},{code:'KL',v:22},
+  {code:'JH',v:44},{code:'AS',v:28},{code:'UK',v:48},{code:'HP',v:30},
+]);
+
+// ---- Full India states/UTs choropleth map (Policy Simulator) ----
+function renderIndiaMap(containerId, data){
+  const colorFor = v => v>=75?'#189A72':v>=50?'#3568F2':v>=30?'#C97F17':'#D9E0EB';
+  const [minx,miny,maxx,maxy] = data.viewbox;
+  let paths = '';
+  data.states.forEach(s=>{
+    paths += `<path class="india-state" d="${s.d}" fill="${colorFor(s.v)}" fill-opacity="0.92" data-name="${s.name}" data-code="${s.code}" data-v="${s.v}"></path>`;
+  });
+  const el = document.getElementById(containerId);
+  el.innerHTML = `<svg viewBox="${minx} ${miny} ${maxx} ${maxy}" width="100%">${paths}</svg>`;
+  el.querySelectorAll('.india-state').forEach(path=>{
+    path.addEventListener('mousemove', e=>showMapTooltip(e, path));
+    path.addEventListener('mouseleave', hideTooltip);
+  });
+}
+renderIndiaMap('indiaImpactMap', INDIA_MAP_DATA);
+
+function showMapTooltip(e, path){
+  const name = path.dataset.name, v = path.dataset.v;
+  const pop = document.getElementById('ttPop');
+  pop.innerHTML = `<b>${name}</b><div class="trow"><span>Net benefit</span><b>${v}%</b></div>`;
+  positionTooltip(e.clientX, e.clientY);
+  pop.classList.add('show');
+}
+
+// National Issue Heatmap — states x issues intensity grid
+(function renderHeatmap(){
+  const states = ['Punjab','Rajasthan','Maharashtra','Karnataka','UP','Bihar','Tamil Nadu','WB'];
+  const issues = ['Water','Jobs','Cyber','Health'];
+  // fixed intensity matrix (0-100) so layout is deterministic
+  const matrix = [
+    [95,88,60,40],
+    [92,55,42,38],
+    [58,80,70,65],
+    [40,62,88,45],
+    [70,50,35,72],
+    [66,90,30,80],
+    [35,45,55,42],
+    [50,68,40,90],
+  ];
+  const cellColor = v => v>=80?'#D14343':v>=60?'#C97F17':v>=35?'#3568F2':'#D9E0EB';
+  let html = '<div style="display:grid; grid-template-columns: 70px repeat('+issues.length+',1fr); gap:5px;">';
+  html += '<div></div>' + issues.map(i=>`<div style="font-family:var(--f-mono); font-size:9.5px; color:var(--ink-500); text-align:center; padding-bottom:2px;">${i}</div>`).join('');
+  states.forEach((s,r)=>{
+    html += `<div style="font-size:10.5px; color:var(--ink-500); display:flex; align-items:center;">${s}</div>`;
+    issues.forEach((iss,c)=>{
+      const v = matrix[r][c];
+      html += `<div title="${s} · ${iss}: ${v}%" style="height:26px; border-radius:6px; background:${cellColor(v)}; opacity:${0.35+v/160}; display:flex; align-items:center; justify-content:center; font-family:var(--f-mono); font-size:9px; color:#fff; font-weight:600;">${v}</div>`;
+    });
+  });
+  html += '</div>';
+  document.getElementById('heatmapGrid').innerHTML = html;
+})();
+
+function goTo(page){
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===page));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('topEyebrow').textContent = titles[page].eyebrow;
+  document.getElementById('topTitle').textContent = titles[page].title;
+  document.getElementById('pageContent').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=>goTo(btn.dataset.page));
+});
+
+// Live clock for the Debate Intelligence session bar
+(function liveClock(){
+  const el = document.getElementById('clockNow');
+  if(!el) return;
+  let t = 14*3600 + 22*60 + 7;
+  setInterval(()=>{
+    t++;
+    const h = String(Math.floor(t/3600)%24).padStart(2,'0');
+    const m = String(Math.floor(t/60)%60).padStart(2,'0');
+    const s = String(t%60).padStart(2,'0');
+    el.textContent = `${h}:${m}:${s} IST`;
+  }, 1000);
+})();
+
+// ============================================================
+// CURRENT SPEAKER TIMER — real ascending timer, independent of session clock
+// ============================================================
+(function speakerTimer(){
+  const textEl = document.getElementById('speakerTimerText');
+  const ring = document.getElementById('speakerRing');
+  if(!textEl || !ring) return;
+  let seconds = 3*60 + 42; // starts at the displayed 03:42
+  const CIRC = 195;         // matches stroke-dasharray in markup
+  const LOOP = 600;         // ring completes a full lap every 10 minutes of floor time
+  function render(){
+    const m = String(Math.floor(seconds/60)).padStart(2,'0');
+    const s = String(seconds%60).padStart(2,'0');
+    textEl.textContent = `${m}:${s}`;
+    const frac = (seconds % LOOP) / LOOP;
+    ring.setAttribute('stroke-dashoffset', (CIRC * (1 - frac)).toFixed(1));
+  }
+  render();
+  setInterval(()=>{ seconds++; render(); }, 1000);
+})();
+
+// ============================================================
+// GENERIC TOOLTIP ENGINE (priority list + notification + map)
+// ============================================================
+function positionTooltip(x, y){
+  const pop = document.getElementById('ttPop');
+  const pad = 14;
+  let left = x + pad, top = y + pad;
+  const w = 230, h = 120;
+  if(left + w > window.innerWidth) left = x - w - pad;
+  if(top + h > window.innerHeight) top = y - h - pad;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+function hideTooltip(){
+  document.getElementById('ttPop').classList.remove('show');
+}
+document.querySelectorAll('.list-row.tt-anchor').forEach(row=>{
+  row.addEventListener('mousemove', e=>{
+    const pop = document.getElementById('ttPop');
+    const d = row.dataset;
+    pop.innerHTML = `<b>${d.ttTitle}</b>
+      <div class="trow"><span>Urgency</span><b>${d.ttUrgency}</b></div>
+      <div class="trow"><span>Affected</span><b>${d.ttPop}</b></div>
+      <div class="trow"><span>Committee</span><b>${d.ttCommittee}</b></div>
+      <div class="tnote">${d.ttDesc}</div>`;
+    positionTooltip(e.clientX, e.clientY);
+    pop.classList.add('show');
+  });
+  row.addEventListener('mouseleave', hideTooltip);
+});
+document.getElementById('notifBtn').addEventListener('mousemove', e=>{
+  const pop = document.getElementById('ttPop');
+  pop.innerHTML = `<b>Notifications</b>
+    <div class="trow"><span>Pending alerts</span><b>3</b></div>
+    <div class="tnote">Latest: "Cyber Security Bill requires committee review."</div>`;
+  positionTooltip(e.clientX, e.clientY);
+  pop.classList.add('show');
+});
+document.getElementById('notifBtn').addEventListener('mouseleave', hideTooltip);
+
+// ============================================================
+// CAST VOTE MODAL
+// ============================================================
+let selectedVote = null;
+function openVoteModal(){
+  selectedVote = null;
+  document.querySelectorAll('.vote-option').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('voteOverlay').classList.add('open');
+}
+function closeVoteModal(){
+  document.getElementById('voteOverlay').classList.remove('open');
+}
+function selectVote(el){
+  document.querySelectorAll('.vote-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedVote = el.dataset.vote;
+}
+function confirmVote(){
+  if(!selectedVote){ toast('Please select an option to vote'); return; }
+  closeVoteModal();
+  toast('Vote Successfully Recorded');
+}
+
+// ============================================================
+// VIEW BILL MODAL
+// ============================================================
+function openViewBillModal(){ document.getElementById('billOverlay').classList.add('open'); }
+function closeViewBillModal(){ document.getElementById('billOverlay').classList.remove('open'); }
+
+// ============================================================
+// REPORT SLIDE-OVER
+// ============================================================
+function openReportPanel(){ document.getElementById('reportWrap').classList.add('open'); }
+function closeReportPanel(){ document.getElementById('reportWrap').classList.remove('open'); }
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(message){
+  const stack = document.getElementById('toastStack');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>${message}`;
+  stack.appendChild(el);
+  requestAnimationFrame(()=> el.classList.add('show'));
+  setTimeout(()=>{
+    el.classList.remove('show');
+    setTimeout(()=> el.remove(), 300);
+  }, 3200);
+}
+
+// ============================================================
+// GENERATE AI SUMMARY — simulated generation workflow
+// ============================================================
+const AI_SUMMARY_POOL = [
+  {h:"AI Legislative Brief", body:"The National Water Security Bill, 2036 establishes a nationwide framework for sustainable water management through integrated river basin planning, AI-driven monitoring systems, and smart infrastructure investments. The legislation prioritizes equitable water access, strengthens drought preparedness, and promotes inter-state cooperation while preserving environmental sustainability. AI analysis indicates broad public support, with recommendations for stronger implementation oversight."},
+  {h:"AI Legislative Brief", body:"This bill modernizes India's water governance through intelligent resource monitoring, predictive drought management, and standardized national water distribution policies. It allocates funding for infrastructure upgrades, introduces transparent reporting requirements, and promotes long-term conservation. Parliamentary analysis identifies implementation costs and central-state coordination as the primary discussion points."},
+  {h:"AI Legislative Brief", body:"The proposed legislation enhances national water security using AI-assisted forecasting, groundwater protection initiatives, reservoir optimization, and emergency response planning. It establishes measurable sustainability targets while requiring periodic parliamentary reviews. AI simulations predict significant long-term environmental and economic benefits, provided implementation remains consistent across all states."},
+  {h:"AI Legislative Brief", body:"The National Water Security Bill, 2036 focuses on ensuring reliable access to clean water by strengthening infrastructure, protecting strategic water resources, and improving governance through digital monitoring systems. The bill emphasizes transparency, accountability, and evidence-based policymaking. AI assessment predicts positive national outcomes while recommending phased funding to reduce implementation risks."},
+  {h:"AI Legislative Brief", body:"This legislation introduces a comprehensive strategy for water resilience by combining infrastructure modernization, environmental conservation, AI-enabled resource management, and inter-state coordination. Key provisions include real-time monitoring, climate adaptation measures, and increased public transparency. Legislative analysis concludes that the bill supports long-term sustainability while recommending periodic policy evaluations after implementation."},
+];
+const AI_STATUS_MESSAGES = [
+  "Analyzing legislative clauses...",
+  "Reviewing committee recommendations...",
+  "Evaluating fiscal implications...",
+  "Assessing environmental impact...",
+  "Comparing historical legislation...",
+  "Generating executive brief...",
+];
+let lastSummaryIdx = -1;
+let aiGenerating = false;
+
+function generateAiSummary(){
+  if(aiGenerating) return;
+  aiGenerating = true;
+  const btn = document.getElementById('aiSummaryBtn');
+  const card = document.getElementById('aiSummaryCard');
+  const body = document.getElementById('aiSummaryBody');
+
+  btn.disabled = true;
+  btn.classList.add('is-loading');
+  btn.textContent = 'Generating...';
+
+  card.style.display = 'block';
+  body.innerHTML = `
+    <div class="ai-loading-panel">
+      <div class="ai-loading-ring"></div>
+      <div class="ai-status-msg" id="aiStatusMsg">${AI_STATUS_MESSAGES[0]}</div>
+    </div>`;
+
+  const statusEl = document.getElementById('aiStatusMsg');
+  const statusInterval = setInterval(()=>{
+    statusEl.style.opacity = 0;
+    setTimeout(()=>{
+      statusEl.textContent = AI_STATUS_MESSAGES[Math.floor(Math.random()*AI_STATUS_MESSAGES.length)];
+      statusEl.style.opacity = 1;
+    }, 200);
+  }, 700);
+
+  const delay = 2000 + Math.random()*3000; // 2-5s, different every click
+
+  setTimeout(()=>{
+    clearInterval(statusInterval);
+
+    let idx = Math.floor(Math.random()*AI_SUMMARY_POOL.length);
+    if(AI_SUMMARY_POOL.length > 1){
+      while(idx === lastSummaryIdx){ idx = Math.floor(Math.random()*AI_SUMMARY_POOL.length); }
+    }
+    lastSummaryIdx = idx;
+    const summary = AI_SUMMARY_POOL[idx];
+    const confidence = (94 + Math.random()*5).toFixed(1);
+
+    body.innerHTML = `
+      <div class="ai-panel ai-result-panel">
+        <div class="ai-panel-head">
+          <div class="ai-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 9.5 22 12 14.5 14.5 12 22 9.5 14.5 2 12 9.5 9.5Z"/></svg></div>
+          <b>AI Generated Summary</b>
+          <span class="badge badge-blue" style="margin-left:auto;">Generated Just Now</span>
+        </div>
+        <p>${summary.body}</p>
+        <div class="ai-meta-row">
+          <div class="ai-meta-item">Confidence<b>${confidence}%</b></div>
+          <div class="ai-meta-item">Estimated Reading Time<b>~30 seconds</b></div>
+        </div>
+      </div>`;
+
+    btn.disabled = false;
+    btn.classList.remove('is-loading');
+    btn.textContent = 'Generate AI Summary';
+    aiGenerating = false;
+  }, delay);
+}
+</script>
+</body>
+</html>
