@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyGuard AI - AWS Anomaly Detection</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#18212f;--muted:#6b7280;--blue:#2563eb;--green:#16a34a;--amber:#d97706;--red:#dc2626;--line:#e5e7eb;--purple:#7c3aed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:#101827;color:white;padding:22px 34px;display:flex;justify-content:space-between;align-items:center}h1{margin:0;font-size:25px}header p{margin:5px 0 0;color:#b9c3d3;font-size:13px}.live{display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px #22c55e22}
+main{max-width:1300px;margin:24px auto;padding:0 22px}.top{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 2px 8px #00000008}.label{font-size:12px;color:var(--muted);margin-bottom:8px}.value{font-size:26px;font-weight:750}.sub{font-size:12px;color:var(--muted);margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px}.section-title{font-weight:700;margin-bottom:14px}.chart-wrap{height:330px}.chart-wrap canvas{width:100%!important;height:100%!important}
+.alert{border:1px solid #fecaca;background:#fff7f7;border-radius:12px;padding:14px;margin-bottom:11px}.alert-head{display:flex;justify-content:space-between;align-items:center}.badge{font-size:11px;font-weight:700;border-radius:999px;padding:5px 9px}.high{background:#fee2e2;color:#991b1b}.medium{background:#fef3c7;color:#92400e}.normal{background:#dcfce7;color:#166534}.alert strong{font-size:14px}.alert p{font-size:12px;line-height:1.5;color:#4b5563;margin:8px 0 0}
+.stations{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.station{border:1px solid var(--line);border-radius:12px;padding:13px}.station-top{display:flex;justify-content:space-between;align-items:center}.status{width:10px;height:10px;border-radius:50%;background:var(--green)}.status.warn{background:var(--amber)}.status.bad{background:var(--red)}.reading{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.reading div{background:#f8fafc;border-radius:8px;padding:8px}.reading b{display:block;font-size:14px}.reading span{font-size:10px;color:var(--muted)}
+.heatmap{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.cell{height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}.c0{background:#dcfce7;color:#166534}.c1{background:#fef3c7;color:#92400e}.c2{background:#fed7aa;color:#9a3412}.c3{background:#fecaca;color:#991b1b}.legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--muted)}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px}
+.pipeline{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.step{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:9px;padding:9px 10px;font-size:11px;font-weight:650}.arrow{color:#94a3b8}.notify{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:14px}.notify h3{margin:0 0 7px;font-size:14px;color:#5b21b6}.notify p{font-size:12px;line-height:1.55;margin:0;color:#4b5563}.actions{display:flex;gap:8px;margin-top:12px}.btn{border:0;border-radius:8px;padding:9px 12px;font-weight:650;font-size:12px;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:#eef2ff;color:#3730a3}.footer{font-size:11px;color:var(--muted);text-align:center;padding:25px}
+@media(max-width:900px){.top{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.stations{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div><h1>SkyGuard AI</h1><p>Intelligent Real-Time AWS Anomaly Detection & Sensor Health Monitoring</p></div><div class="live"><span class="dot"></span>Live monitoring</div></header>
+<main>
+<section class="top">
+<div class="card"><div class="label">Station</div><div class="value">AWS-042</div><div class="sub">Rajasthan • 28.61°N, 75.14°E</div></div>
+<div class="card"><div class="label">Temperature</div><div class="value">55.0°C</div><div class="sub red">↑ Unusual reading</div></div>
+<div class="card"><div class="label">Pressure</div><div class="value">1001.8 hPa</div><div class="sub amber">Pattern deviation</div></div>
+<div class="card"><div class="label">Humidity</div><div class="value">91%</div><div class="sub amber">High for this station</div></div>
+</section>
+<section class="grid">
+<div class="card"><div class="section-title">Sensor Trend & Anomaly Detection</div><div class="chart-wrap"><canvas id="chart"></canvas></div></div>
+<div class="card"><div class="section-title">Current Notification</div><div class="notify"><h3>⚠ Possible Weather Event</h3><p><b>Confidence: 82%</b><br>55°C is unusual, but the station has recorded similar high-temperature patterns historically. Neighboring stations are also elevated, increasing confidence that this may be a genuine weather event.</p><div class="actions"><button class="btn primary" onclick="alert('Notification acknowledged')">Acknowledge</button><button class="btn secondary" onclick="alert('Verification request sent')">Request Verification</button></div></div><div style="height:14px"></div><div class="section-title">Recent Alerts</div>
+<div class="alert"><div class="alert-head"><strong>AWS-017 • Frozen humidity</strong><span class="badge high">HIGH</span></div><p>Same humidity value repeated for 46 minutes. Possible sensor/system issue. Confidence 94%.</p></div>
+<div class="alert"><div class="alert-head"><strong>AWS-031 • Pressure deviation</strong><span class="badge medium">MEDIUM</span></div><p>Pressure changed faster than its learned station pattern. Verify against nearby stations.</p></div>
+</div>
+</section>
+<section class="card" style="margin-top:16px"><div class="section-title">Neighbouring AWS Verification</div><div class="stations">
+<div class="station"><div class="station-top"><b>AWS-041</b><span class="status warn"></span></div><div class="sub">12 km away</div><div class="reading"><div><b>53.8°C</b><span>Temp</span></div><div><b>1002.1</b><span>hPa</span></div><div><b>88%</b><span>RH</span></div></div></div>
+<div class="station"><div class="station-top"><b>AWS-043</b><span class="status warn"></span></div><div class="sub">18 km away</div><div class="reading"><div><b>54.4°C</b><span>Temp</span></div><div><b>1001.5</b><span>hPa</span></div><div><b>90%</b><span>RH</span></div></div></div>
+<div class="station"><div class="station-top"><b>AWS-046</b><span class="status"></span></div><div class="sub">24 km away</div><div class="reading"><div><b>52.9°C</b><span>Temp</span></div><div><b>1002.4</b><span>hPa</span></div><div><b>86%</b><span>RH</span></div></div></div>
+</div><p class="sub" style="margin-top:12px">Independent neighboring observations support the event hypothesis. If only AWS-042 were abnormal, the system would increase the likelihood of a sensor fault.</p></section>
+<section class="grid">
+<div class="card"><div class="section-title">Station Anomaly Heatmap</div><div class="heatmap">
+<div class="cell c0">A-01<br>2%</div><div class="cell c0">A-02<br>4%</div><div class="cell c1">A-03<br>21%</div><div class="cell c0">A-04<br>6%</div><div class="cell c2">A-05<br>47%</div>
+<div class="cell c0">A-06<br>3%</div><div class="cell c1">A-07<br>18%</div><div class="cell c3">A-08<br>88%</div><div class="cell c2">A-09<br>52%</div><div class="cell c1">A-10<br>24%</div>
+<div class="cell c0">A-11<br>7%</div><div class="cell c2">A-12<br>55%</div><div class="cell c1">A-13<br>16%</div><div class="cell c0">A-14<br>5%</div><div class="cell c3">A-15<br>91%</div>
+</div><div class="legend"><span><i style="background:#dcfce7"></i>Normal</span><span><i style="background:#fef3c7"></i>Watch</span><span><i style="background:#fed7aa"></i>High</span><span><i style="background:#fecaca"></i>Critical</span></div></div>
+<div class="card"><div class="section-title">SkyGuard Decision Pipeline</div><div class="pipeline"><span class="step">AWS Data</span><span class="arrow">→</span><span class="step">Clean</span><span class="arrow">→</span><span class="step">Rules + ML</span><span class="arrow">→</span><span class="step">History</span><span class="arrow">→</span><span class="step">Neighbour Check</span><span class="arrow">→</span><span class="step">Notify</span></div><p class="sub" style="margin-top:14px">Advisory system: it does not autonomously repair or calibrate sensors. It provides evidence-based notifications to responsible teams.</p></div>
+</section>
+<div class="footer">Prototype demonstration • Historical + simulated AWS data • AI/ML layer can be upgraded as more station history becomes available</div>
+</main>
+<script>
+const labels=['10:00','10:10','10:20','10:30','10:40','10:50','11:00','11:10','11:20','11:30','11:40','11:50'];
+const ctx=document.getElementById('chart');
+new Chart(ctx,{type:'line',data:{labels,datasets:[
+{label:'Temperature (°C)',data:[42,43,43,44,44,45,46,47,48,51,53,55],borderColor:'#dc2626',backgroundColor:'#dc262622',tension:.35,yAxisID:'y'},
+{label:'Pressure (hPa)',data:[1005,1005,1004.8,1004.6,1004.5,1004.1,1003.7,1003.1,1002.7,1002.4,1002,1001.8],borderColor:'#2563eb',tension:.35,yAxisID:'y1'},
+{label:'Humidity (%)',data:[74,75,76,77,78,79,80,82,84,86,89,91],borderColor:'#0891b2',tension:.35,yAxisID:'y2'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{font:{size:11}}}},scales:{y:{position:'left',title:{display:true,text:'Temp °C'},grid:{color:'#eef2f7'}},y1:{position:'right',title:{display:true,text:'Pressure hPa'},grid:{drawOnChartArea:false}},y2:{display:false,min:0,max:100},x:{grid:{display:false}}}}});
+</script>
+</body></html>
