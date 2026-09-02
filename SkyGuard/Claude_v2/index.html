@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyGuard AI</title>
+<style>
+  :root{
+    --navy-900:#081226;
+    --navy-800:#0b1a34;
+    --navy-700:#122a4d;
+    --navy-600:#1a3866;
+    --navy-500:#254a82;
+    --navy-300:#5c7bab;
+    --white:#ffffff;
+    --off-white:#eef2f9;
+    --line-temp:#e5484d;
+    --line-pressure:#2fb872;
+    --line-humidity:#3b82f6;
+    --amber:#e0a72e;
+    --danger:#e5484d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:linear-gradient(180deg,var(--navy-900) 0%, var(--navy-800) 340px, var(--off-white) 340px);
+    font-family:'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color:var(--navy-900);
+    min-height:100vh;
+  }
+
+  header.top{
+    padding:28px 32px 6px 32px;
+    color:var(--white);
+  }
+  header.top .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  header.top .brand .mark{
+    width:14px;height:14px;border-radius:3px;
+    background:var(--white);
+    transform:rotate(45deg);
+    display:inline-block;
+  }
+  header.top h1{
+    font-size:26px;
+    letter-spacing:0.3px;
+    margin:0;
+    font-weight:600;
+  }
+  header.top p.tag{
+    margin:2px 0 0 24px;
+    color:var(--navy-300);
+    font-size:13px;
+  }
+
+  .mode-bar{
+    display:flex;
+    gap:12px;
+    padding:20px 32px 8px 32px;
+    flex-wrap:wrap;
+  }
+  .mode-btn{
+    flex:1 1 140px;
+    min-width:120px;
+    background:var(--navy-700);
+    border:1px solid var(--navy-500);
+    color:var(--off-white);
+    padding:14px 10px;
+    border-radius:6px;
+    text-align:center;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.2px;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease;
+    position:relative;
+  }
+  .mode-btn:hover{ border-color:var(--white); }
+  .mode-btn:active{ transform:translateY(1px); }
+  .mode-btn .dot{
+    position:absolute;top:8px;right:10px;
+    width:7px;height:7px;border-radius:50%;
+    background:var(--navy-300);
+  }
+  .mode-btn.active{
+    background:var(--white);
+    color:var(--navy-900);
+    border-color:var(--white);
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+  .mode-btn.active .dot{ background:var(--navy-900); }
+  .mode-btn[data-mode="Frozen"].active .dot{ background:#3b82f6; }
+  .mode-btn[data-mode="Spike"].active .dot{ background:var(--amber); }
+  .mode-btn[data-mode="Storm"].active .dot{ background:#7c5cff; }
+  .mode-btn[data-mode="Flood"].active .dot{ background:var(--line-humidity); }
+  .mode-btn small{
+    display:block;
+    font-weight:400;
+    font-size:10.5px;
+    color:var(--navy-300);
+    margin-top:3px;
+  }
+  .mode-btn.active small{ color:var(--navy-500); }
+
+  .panel{
+    background:var(--white);
+    border-radius:10px;
+    box-shadow:0 6px 20px rgba(8,18,38,0.12);
+  }
+
+  .graph-wrap{
+    margin:18px 32px 0 32px;
+    padding:20px 22px 16px 22px;
+  }
+  .graph-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .legend{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    color:var(--navy-700);
+  }
+  .legend span{ display:flex; align-items:center; gap:6px; font-weight:600;}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .legend .val{font-weight:400; color:#5b6b83; margin-left:2px;}
+
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .controls select, .controls button{
+    font-family:inherit;
+    font-size:12.5px;
+    border-radius:6px;
+    border:1px solid #d7deea;
+    padding:7px 10px;
+    background:var(--off-white);
+    color:var(--navy-800);
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:var(--navy-800) !important;
+    color:var(--white) !important;
+    border-color:var(--navy-800) !important;
+    font-weight:600;
+  }
+  .btn-primary:hover{ background:var(--navy-600) !important; }
+  .pace-toggle{ display:none; align-items:center; gap:8px; }
+  .pace-toggle.show{ display:flex; }
+
+  canvas#chart{
+    width:100%;
+    height:300px;
+    display:block;
+    border-radius:6px;
+  }
+
+  .lower{
+    display:grid;
+    grid-template-columns:1.15fr 1fr;
+    gap:20px;
+    margin:20px 32px 40px 32px;
+  }
+  @media (max-width:900px){ .lower{grid-template-columns:1fr;} }
+
+  .map-card{ padding:18px 18px 22px 18px; }
+  .card-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--navy-800);
+    margin:0 0 2px 0;
+  }
+  .card-sub{
+    font-size:11.5px;
+    color:#8592a8;
+    margin:0 0 10px 0;
+  }
+  svg#indiaMap{ width:100%; height:auto; display:block; }
+  .india-shape{ fill:#dfe7f3; stroke:var(--navy-500); stroke-width:1.4; }
+  .pin-tail{ fill:var(--navy-800); }
+  .pin-head{ fill:var(--white); stroke:var(--navy-800); stroke-width:2; }
+  .pin-label{ font-size:8.5px; fill:var(--navy-800); font-weight:600; }
+
+  .info-card{ padding:20px 22px; }
+  .info-title-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid #eef1f7;
+    padding-bottom:12px;
+    margin-bottom:12px;
+  }
+  .info-title-row h2{
+    margin:0;
+    font-size:20px;
+    color:var(--navy-900);
+  }
+  .info-title-row h2 span{ color:#9aa6ba; font-weight:400; font-size:13px; }
+  .info-title-row p{
+    margin:2px 0 0 0;
+    font-size:12.5px;
+    color:#8592a8;
+    font-weight:600;
+    letter-spacing:.2px;
+  }
+  .badge-weather{ color:#7c5cff; }
+  .badge-fault{ color:var(--amber); }
+  .badge-normal{ color:#2fb872; }
+
+  .rca-block{
+    font-size:13.5px;
+    line-height:1.55;
+    color:#2c3a52;
+    margin-bottom:16px;
+  }
+  .metric-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .metric-chip{
+    flex:1;
+    background:var(--off-white);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .metric-chip .num{ font-size:19px; font-weight:700; color:var(--navy-900); }
+  .metric-chip .lab{ font-size:10.5px; color:#8592a8; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+
+  .section-label{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--navy-700);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    margin:18px 0 8px 0;
+  }
+  .heatmap{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+  }
+  .heat-cell{
+    border-radius:6px;
+    padding:8px 6px;
+    color:var(--white);
+    font-size:10.5px;
+  }
+  .heat-cell b{ display:block; font-size:12.5px; margin-bottom:2px; }
+  .heat-cell .reason{ font-size:9px; opacity:.9; display:block; margin-top:3px; line-height:1.3;}
+
+  .health-score-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:14px;
+    padding:12px 14px;
+    background:var(--off-white);
+    border-radius:8px;
+  }
+  .health-score-row .big{ font-size:22px; font-weight:700; }
+  .health-score-row .lab{ font-size:11px; color:#8592a8; }
+
+  .alert-btn{
+    margin-top:14px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:var(--danger);
+    color:var(--white);
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    letter-spacing:.2px;
+  }
+  .alert-btn:hover{ background:#c93338; }
+  .alert-btn:disabled{ background:#c9d2e0; cursor:default; }
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--navy-900);
+    color:var(--white);
+    padding:12px 20px;
+    border-radius:8px;
+    font-size:13px;
+    opacity:0;
+    transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+    box-shadow:0 8px 22px rgba(0,0,0,.3);
+    z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .empty-state{
+    font-size:13px;
+    color:#8592a8;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="mark"></span>
+    <h1>SkyGuard AI</h1>
+  </div>
+  <p class="tag">Live sensor telemetry &amp; anomaly detection</p>
+</header>
+
+<div class="mode-bar" id="modeBar">
+  <div class="mode-btn active" data-mode="Normal">Normal<small>baseline</small><span class="dot"></span></div>
+  <div class="mode-btn" data-mode="Frozen">Frozen<small>sensor fault</small><span class="dot"></span></div>
+  <div class="mode-btn" data-mode="Spike">Spike<small>sensor fault</small><span class="dot"></span></div>
+  <div class="mode-btn" data-mode="Storm">Storm<small>weather event</small><span class="dot"></span></div>
+  <div class="mode-btn" data-mode="Flood">Flood<small>weather event</small><span class="dot"></span></div>
+</div>
+
+<div class="panel graph-wrap">
+  <div class="graph-head">
+    <div class="legend">
+      <span><i style="background:var(--line-temp)"></i>Temperature <span class="val" id="valTemp">--</span></span>
+      <span><i style="background:var(--line-pressure)"></i>Pressure <span class="val" id="valPressure">--</span></span>
+      <span><i style="background:var(--line-humidity)"></i>Humidity <span class="val" id="valHumidity">--</span></span>
+    </div>
+    <div class="controls">
+      <div class="pace-toggle" id="paceToggle">
+        <select id="paceSelect">
+          <option value="5">Pace: 5 min / sec</option>
+          <option value="1440">Pace: 1 day / sec</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="showAnomalyBtn">Show Anomaly</button>
+    </div>
+  </div>
+  <canvas id="chart"></canvas>
+</div>
+
+<div class="lower">
+  <div class="panel map-card">
+    <p class="card-title">Affected Region Watch</p>
+    <p class="card-sub">Stations flagged in northern &amp; northwestern basin (illustrative map)</p>
+    <svg id="indiaMap" viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="panel info-card" id="infoCard">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  /* ---------------------------------------------------------------
+     CONFIG
+  ----------------------------------------------------------------*/
+  const BASE = { temp:25, pressure:1013, humidity:50 };
+  const MAX_POINTS = 48;
+  const STATIONS = ["STN-01 Leh","STN-02 Shimla","STN-03 Chandigarh","STN-04 Dehradun",
+                     "STN-05 Jaipur","STN-06 Lucknow","STN-07 Amritsar","STN-08 Kanpur"];
+
+  let mode = "Normal";
+  let pace = 5;              // simulated minutes per real second
+  let floodPace = 5;
+  let sampleIntervalMin = 15; // minutes between data points
+  let points = [];            // {t: Date, temp, pressure, humidity}
+  let simMinutesAccum = 0;
+  let lastFrame = null;
+  let simClock = new Date();
+  simClock.setSeconds(0,0);
+
+  let modeStartTime = simClock;
+  let modeElapsedPoints = 0;
+  let frozenSeries = [];
+  let frozenValues = {};
+  let spikeSeries = [];
+  let stormPhase = 0;   // 0 ramp, 1 hold, 2 recede
+  let stormHumidityPeak = null;
+
+  let mildAnomalyCount = 0;
+  let severeAnomalyCount = 0;
+
+  /* ---------------------------------------------------------------
+     CANVAS SETUP
+  ----------------------------------------------------------------*/
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 300 * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  /* ---------------------------------------------------------------
+     DATA GENERATION
+  ----------------------------------------------------------------*/
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function noise(mag){ return (Math.random()-0.5)*2*mag; }
+
+  function seedInitial(){
+    points = [];
+    let t = new Date(simClock);
+    for(let i=MAX_POINTS-1;i>=0;i--){
+      const ts = new Date(t.getTime() - i*sampleIntervalMin*60000);
+      points.push({
+        t: ts,
+        temp: BASE.temp + noise(1.2),
+        pressure: BASE.pressure + noise(2),
+        humidity: clamp(BASE.humidity + noise(4),20,80)
+      });
+    }
+  }
+
+  function startMode(newMode){
+    mode = newMode;
+    modeStartTime = new Date(simClock);
+    modeElapsedPoints = 0;
+    stormPhase = 0;
+    stormHumidityPeak = null;
+    mildAnomalyCount = 0;
+    severeAnomalyCount = 0;
+
+    if(mode === "Normal"){
+      sampleIntervalMin = 15;
+    } else if(mode === "Flood"){
+      sampleIntervalMin = (floodPace > 5) ? 240 : 60; // coarser sampling at day-pace
+    } else {
+      sampleIntervalMin = 1;
+    }
+
+    const prev = points[points.length-1];
+    if(mode === "Frozen"){
+      const pool = ['temp','pressure','humidity'];
+      const n = 1 + Math.floor(Math.random()*2); // 1 or 2 series
+      frozenSeries = pool.sort(()=>Math.random()-0.5).slice(0,n);
+      frozenValues = {};
+      frozenSeries.forEach(k=>{ frozenValues[k] = prev[k]; });
+    } else {
+      frozenSeries = [];
+    }
+
+    if(mode === "Spike"){
+      const pool = ['temp','pressure','humidity'];
+      const n = 1 + Math.floor(Math.random()*2);
+      spikeSeries = pool.sort(()=>Math.random()-0.5).slice(0,n);
+    } else {
+      spikeSeries = [];
+    }
+
+    document.getElementById('paceToggle').classList.toggle('show', mode === "Flood");
+    renderInfoPanel();
+    renderMap();
+  }
+
+  function nextPoint(prev){
+    modeElapsedPoints++;
+    let p = { t:null, temp:prev.temp, pressure:prev.pressure, humidity:prev.humidity };
+
+    if(mode === "Normal"){
+      p.temp = clamp(prev.temp + noise(0.8), 18, 32);
+      p.pressure = clamp(prev.pressure + noise(1.4), 1002, 1024);
+      p.humidity = clamp(prev.humidity + noise(3), 30, 70);
+
+    } else if(mode === "Frozen"){
+      ['temp','pressure','humidity'].forEach(k=>{
+        if(frozenSeries.includes(k)){
+          p[k] = frozenValues[k]; // dead flatline
+        } else {
+          const range = k==='pressure' ? 1.4 : (k==='temp' ? 0.8 : 3);
+          p[k] = k==='humidity' ? clamp(prev[k]+noise(range),30,70) : prev[k]+noise(range);
+        }
+      });
+      mildAnomalyCount += 1;
+
+    } else if(mode === "Spike"){
+      ['temp','pressure','humidity'].forEach(k=>{
+        if(spikeSeries.includes(k)){
+          const doSpike = Math.random() < 0.55;
+          if(doSpike){
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            const magBase = k==='pressure' ? 30 : (k==='temp' ? 10 : 25);
+            p[k] = BASE[k] + dir*magBase*(0.6+Math.random()*0.8);
+            severeAnomalyCount += 1;
+          } else {
+            const range = k==='pressure' ? 1.4 : (k==='temp' ? 0.8 : 3);
+            p[k] = prev[k] + noise(range);
+            mildAnomalyCount += 1;
+          }
+        } else {
+          const range = k==='pressure' ? 1.4 : (k==='temp' ? 0.8 : 3);
+          p[k] = prev[k] + noise(range);
+        }
+      });
+      p.humidity = clamp(p.humidity,10,100);
+
+    } else if(mode === "Storm"){
+      const targetTemp = BASE.temp * 0.85;
+      const targetPressure = BASE.pressure * 0.93;
+      p.temp = prev.temp + (targetTemp - prev.temp)*0.15 + noise(0.5);
+      p.pressure = prev.pressure + (targetPressure - prev.pressure)*0.15 + noise(1);
+
+      if(stormPhase === 0){
+        const target = Math.min(BASE.humidity*1.30, 95);
+        p.humidity = prev.humidity + (target - prev.humidity)*0.25 + noise(1.5);
+        if(p.humidity >= 94.5){ stormPhase = 1; stormHumidityPeak = p.humidity; }
+      } else if(stormPhase === 1){
+        p.humidity = clamp((stormHumidityPeak||95) + noise(1), 90, 96);
+        if(modeElapsedPoints > 18){ stormPhase = 2; }
+      } else {
+        const recede = (stormHumidityPeak||95) * 0.70;
+        p.humidity = prev.humidity + (recede - prev.humidity)*0.12 + noise(1.5);
+      }
+      p.humidity = clamp(p.humidity,10,97);
+      severeAnomalyCount = Math.min(modeElapsedPoints, 40);
+      mildAnomalyCount = modeElapsedPoints;
+
+    } else if(mode === "Flood"){
+      const targetTemp = BASE.temp * 0.90;
+      const targetPressure = BASE.pressure * 0.97;
+      p.temp = prev.temp + (targetTemp - prev.temp)*0.1 + noise(0.4);
+      p.pressure = prev.pressure + (targetPressure - prev.pressure)*0.1 + noise(0.8);
+      p.humidity = clamp(90 + Math.random()*10, 90, 100);
+      severeAnomalyCount = Math.min(modeElapsedPoints,60);
+      mildAnomalyCount = modeElapsedPoints;
+    }
+
+    p.t = new Date(prev.t.getTime() + sampleIntervalMin*60000);
+    return p;
+  }
+
+  function pushPoint(){
+    const prev = points[points.length-1];
+    const p = nextPoint(prev);
+    points.push(p);
+    if(points.length > MAX_POINTS) points.shift();
+    simClock = new Date(p.t);
+  }
+
+  /* ---------------------------------------------------------------
+     MAIN LOOP
+  ----------------------------------------------------------------*/
+  function loop(ts){
+    if(lastFrame === null) lastFrame = ts;
+    const dt = (ts - lastFrame)/1000;
+    lastFrame = ts;
+
+    const effPace = (mode === "Flood") ? floodPace : pace;
+    simMinutesAccum += effPace * dt;
+
+    let added = 0;
+    while(simMinutesAccum >= sampleIntervalMin && added < 60){
+      pushPoint();
+      simMinutesAccum -= sampleIntervalMin;
+      added++;
+    }
+    if(added>0){
+      draw();
+      updateLegendValues();
+      if(mode !== 'Normal') refreshLiveStats();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------------------------------------------------------------
+     DRAWING
+  ----------------------------------------------------------------*/
+  function fmtTick(d, fine, dayPace){
+    if(dayPace){
+      return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    }
+    return d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',hour12:false});
+  }
+
+  function draw(){
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width, H = 300;
+    ctx.clearRect(0,0,W,H);
+
+    // background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,W,H);
+
+    const padL = 46, padR = 46, padT = 14, padB = 30;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    // horizontal gridlines
+    ctx.strokeStyle = '#eef1f7';
+    ctx.lineWidth = 1;
+    for(let i=0;i<=4;i++){
+      const y = padT + (plotH/4)*i;
+      ctx.beginPath();
+      ctx.moveTo(padL,y);
+      ctx.lineTo(W-padR,y);
+      ctx.stroke();
+    }
+
+    const n = points.length;
+    if(n < 2) return;
+    const stepX = plotW/(n-1);
+
+    const fineTicks = (sampleIntervalMin <= 1);
+    const dayPace = (mode === 'Flood' && sampleIntervalMin >= 240);
+
+    // x-axis ticks
+    ctx.font = '10px Segoe UI, Arial';
+    ctx.fillStyle = '#8592a8';
+    ctx.textAlign = 'center';
+    points.forEach((p,i)=>{
+      const x = padL + i*stepX;
+      let isMajor;
+      if(dayPace){
+        isMajor = (p.t.getDate() % 5 === 0);
+      } else if(fineTicks){
+        isMajor = (p.t.getMinutes() % 5 === 0);
+      } else {
+        isMajor = true;
+      }
+      ctx.strokeStyle = '#c7d0e0';
+      ctx.beginPath();
+      if(isMajor){
+        ctx.moveTo(x, H-padB);
+        ctx.lineTo(x, H-padB+6);
+        ctx.stroke();
+        ctx.fillText(fmtTick(p.t, fineTicks, dayPace), x, H-padB+18);
+      } else {
+        ctx.moveTo(x, H-padB);
+        ctx.lineTo(x, H-padB+3);
+        ctx.stroke();
+      }
+    });
+
+    function seriesRange(key){
+      const vals = points.map(p=>p[key]);
+      let mn = Math.min(...vals), mx = Math.max(...vals);
+      if(mx-mn < 0.6){ const mid=(mx+mn)/2; mn=mid-0.6; mx=mid+0.6; }
+      const pad = (mx-mn)*0.15;
+      return [mn-pad, mx+pad];
+    }
+
+    function plotSeries(key, color){
+      const [mn,mx] = seriesRange(key);
+      ctx.beginPath();
+      points.forEach((p,i)=>{
+        const x = padL + i*stepX;
+        const y = padT + plotH - ((p[key]-mn)/(mx-mn))*plotH;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    plotSeries('pressure', getCss('--line-pressure'));
+    plotSeries('humidity', getCss('--line-humidity'));
+    plotSeries('temp', getCss('--line-temp'));
+
+    // left axis label (temperature scale reference)
+    const [tmn,tmx] = seriesRange('temp');
+    ctx.fillStyle = getCss('--line-temp');
+    ctx.textAlign = 'right';
+    ctx.font = '9.5px Segoe UI, Arial';
+    ctx.fillText(tmx.toFixed(1)+'°', padL-6, padT+8);
+    ctx.fillText(tmn.toFixed(1)+'°', padL-6, H-padB);
+  }
+
+  function getCss(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function updateLegendValues(){
+    const last = points[points.length-1];
+    document.getElementById('valTemp').textContent = last.temp.toFixed(1)+'°C';
+    document.getElementById('valPressure').textContent = last.pressure.toFixed(0)+' hPa';
+    document.getElementById('valHumidity').textContent = last.humidity.toFixed(0)+'%';
+  }
+
+  /* ---------------------------------------------------------------
+     SHOW ANOMALY (canvas -> PNG download)
+  ----------------------------------------------------------------*/
+  document.getElementById('showAnomalyBtn').addEventListener('click', function(){
+    const link = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+    link.download = 'SkyGuard_' + mode + '_' + stamp + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Anomaly snapshot saved as image.');
+  });
+
+  /* ---------------------------------------------------------------
+     PACE CONTROL (Flood only)
+  ----------------------------------------------------------------*/
+  document.getElementById('paceSelect').addEventListener('change', function(e){
+    floodPace = parseInt(e.target.value,10);
+    sampleIntervalMin = (floodPace > 5) ? 240 : 60;
+    simMinutesAccum = 0;
+  });
+
+  /* ---------------------------------------------------------------
+     MODE SWITCH BUTTONS
+  ----------------------------------------------------------------*/
+  document.getElementById('modeBar').addEventListener('click', function(e){
+    const btn = e.target.closest('.mode-btn');
+    if(!btn) return;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    startMode(btn.dataset.mode);
+  });
+
+  /* ---------------------------------------------------------------
+     INDIA MAP
+  ----------------------------------------------------------------*/
+  const STATE_PINS = [
+    {name:'Punjab', x:88, y:78},
+    {name:'Himachal Pradesh', x:120, y:66},
+    {name:'Uttarakhand', x:148, y:78},
+    {name:'Uttar Pradesh', x:158, y:120},
+    {name:'Rajasthan', x:92, y:128}
+  ];
+
+  // simplified, illustrative India outline (not survey-accurate)
+  const INDIA_PATH = "M120,8 C138,6 158,14 168,26 C176,20 190,20 198,30 " +
+    "C208,26 222,32 224,46 C232,52 236,66 226,76 C238,86 250,96 244,110 " +
+    "C252,118 250,132 238,136 C230,150 216,148 206,140 C210,156 206,172 196,182 " +
+    "C202,200 198,220 186,232 C190,248 182,266 170,276 C172,292 162,308 150,320 " +
+    "C146,332 138,344 128,352 C122,340 124,326 118,316 C104,308 100,292 106,278 " +
+    "C92,268 88,250 96,236 C82,224 80,204 90,190 C76,178 74,158 86,144 " +
+    "C72,132 72,112 84,100 C74,90 76,72 90,62 C84,48 92,32 108,26 " +
+    "C106,16 112,10 120,8 Z";
+
+  function renderMap(){
+    const svg = document.getElementById('indiaMap');
+    let pins = '';
+    STATE_PINS.forEach(s=>{
+      pins += `<g class="pin" transform="translate(${s.x},${s.y})">
+        <path class="pin-tail" d="M0,0 C-8,-9 -8,-22 0,-30 C8,-22 8,-9 0,0 Z"></path>
+        <circle class="pin-head" cx="0" cy="-21" r="6"></circle>
+        <title>${s.name}</title>
+      </g>`;
+    });
+    svg.innerHTML = `
+      <path class="india-shape" d="${INDIA_PATH}"></path>
+      ${pins}
+      ${STATE_PINS.map(s=>`<text class="pin-label" x="${s.x}" y="${s.y+14}" text-anchor="middle">${s.name.split(' ')[0]}</text>`).join('')}
+    `;
+  }
+
+  /* ---------------------------------------------------------------
+     INFO PANEL / RCA / SENSOR HEALTH
+  ----------------------------------------------------------------*/
+  function confidenceFor(mode){
+    const base = { Normal:0, Frozen:88, Spike:82, Storm:91, Flood:94 };
+    const wobble = Math.min(9, modeElapsedPoints*0.4);
+    return Math.min(99, Math.round(base[mode] + wobble));
+  }
+
+  function supportFor(mode){
+    if(mode==='Normal') return '—';
+    if(mode==='Frozen' || mode==='Spike') return (mildAnomalyCount+severeAnomalyCount) + ' flagged readings';
+    return modeElapsedPoints + ' consecutive intervals';
+  }
+
+  function rcaText(mode){
+    if(mode==='Normal'){
+      return "All three channels are tracking within their expected seasonal envelope. No deviation pattern has been detected on any monitored station.";
+    }
+    if(mode==='Frozen'){
+      const list = frozenSeries.map(k=>k.charAt(0).toUpperCase()+k.slice(1)).join(' and ');
+      return `${list} reading${frozenSeries.length>1?'s have':' has'} remained fixed at a constant value across ${modeElapsedPoints} consecutive samples, with no variance despite continued environmental change on other channels. This flatline signature is characteristic of a stuck transducer or a disconnected/frozen sensor output rather than a real atmospheric condition.`;
+    }
+    if(mode==='Spike'){
+      const list = spikeSeries.map(k=>k.charAt(0).toUpperCase()+k.slice(1)).join(' and ');
+      return `${list} ${spikeSeries.length>1?'channels are':'channel is'} producing abrupt, high-amplitude excursions that exceed plausible physical rate-of-change limits, then reverting. This jitter pattern is consistent with electrical interference or sensor miscalibration rather than genuine weather variability.`;
+    }
+    if(mode==='Storm'){
+      return `Temperature has fallen roughly 15% below baseline while pressure has dropped near 7%, a combination typical of an approaching low-pressure system. Humidity spiked toward saturation (~95%) before beginning a ~30% pullback, matching a storm cell passing through the monitored corridor.`;
+    }
+    if(mode==='Flood'){
+      return `Humidity has held in the 90–100% band continuously across multiple simulated days while temperature stays roughly 10% below baseline and pressure remains suppressed near 3% below baseline. This sustained, multi-day saturation signature is consistent with flood-conducive conditions rather than a short-lived storm cell.`;
+    }
+    return '';
+  }
+
+  function stationHealth(){
+    // baseline healthy stations, degrade ones tied to the active fault
+    const results = STATIONS.map((name,i)=>({name, health:92 - Math.round(noise(6)), reason:'Within normal calibration range.'}));
+    if(mode==='Frozen'){
+      const idxs = [0,3].slice(0, frozenSeries.length || 1);
+      idxs.forEach((idx,j)=>{
+        results[idx].health = clamp(58 - j*6 + Math.round(noise(4)), 20, 68);
+        results[idx].reason = `${frozenSeries[j] ? frozenSeries[j].charAt(0).toUpperCase()+frozenSeries[j].slice(1) : 'Sensor'} output frozen — no variance detected.`;
+      });
+    } else if(mode==='Spike'){
+      const idxs = [1,5].slice(0, spikeSeries.length || 1);
+      idxs.forEach((idx,j)=>{
+        results[idx].health = clamp(64 - j*5 + Math.round(noise(4)), 25, 74);
+        results[idx].reason = `${spikeSeries[j] ? spikeSeries[j].charAt(0).toUpperCase()+spikeSeries[j].slice(1) : 'Sensor'} shows erratic jitter, likely miscalibrated.`;
+      });
+    } else {
+      results.forEach(r=>{ r.health = clamp(r.health, 78, 98); });
+    }
+    return results;
+  }
+
+  function predictionScore(mild, severe){
+    return clamp(100 - (mild*1.4 + severe*7), 5, 100);
+  }
+
+  function heatColor(h){
+    if(h>=85) return '#2fb872';
+    if(h>=70) return '#e0a72e';
+    return '#e5484d';
+  }
+
+  function renderInfoPanel(){
+    const card = document.getElementById('infoCard');
+    const isFault = (mode==='Frozen' || mode==='Spike');
+    const isWeather = (mode==='Storm' || mode==='Flood');
+
+    if(mode==='Normal'){
+      card.innerHTML = `
+        <div class="info-title-row">
+          <div>
+            <h2>Normal <span>System</span></h2>
+            <p class="badge-normal">Baseline Status</p>
+          </div>
+        </div>
+        <div class="rca-block empty-state">${rcaText('Normal')}</div>
+      `;
+      return;
+    }
+
+    const conf = confidenceFor(mode);
+    const sup = supportFor(mode);
+    const subtitle = isFault ? 'Sensor Fault' : 'Weather Event';
+    const badgeClass = isFault ? 'badge-fault' : 'badge-weather';
+
+    let html = `
+      <div class="info-title-row">
+        <div>
+          <h2>${mode} <span>Anomaly</span></h2>
+          <p class="${badgeClass}">${subtitle}</p>
+        </div>
+      </div>
+      <div class="rca-block"><strong>Root cause analysis.</strong> ${rcaText(mode)}</div>
+      <div class="metric-row">
+        <div class="metric-chip"><div class="num">${conf}%</div><div class="lab">Confidence Score</div></div>
+        <div class="metric-chip"><div class="num" style="font-size:15px;">${sup}</div><div class="lab">Support Value</div></div>
+      </div>
+    `;
+
+    if(isFault){
+      const stations = stationHealth();
+      const overall = Math.round(stations.reduce((a,s)=>a+s.health,0)/stations.length);
+      const pred = Math.round(predictionScore(mildAnomalyCount, severeAnomalyCount));
+
+      html += `<div class="section-label">Sensor Health</div>
+        <div class="heatmap">
+          ${stations.map(s=>`
+            <div class="heat-cell" style="background:${heatColor(s.health)}">
+              <b>${s.health}%</b>${s.name}
+              <span class="reason">${s.reason}</span>
+            </div>`).join('')}
+        </div>
+        <div class="health-score-row">
+          <div>
+            <div class="big" style="color:${heatColor(overall)}">${overall}%</div>
+            <div class="lab">Overall Sensor Health</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="big" style="color:${heatColor(pred)}">${pred}</div>
+            <div class="lab">Predicted Health (24h)</div>
+          </div>
+        </div>
+        <button class="alert-btn" id="alertBtn" ${overall>70?'disabled':''}>
+          ${overall<=70 ? 'Send Alert to Maintenance Crew' : 'Sensor health within acceptable range'}
+        </button>
+      `;
+    }
+
+    card.innerHTML = html;
+
+    const alertBtn = document.getElementById('alertBtn');
+    if(alertBtn && !alertBtn.disabled){
+      alertBtn.addEventListener('click', function(){
+        alertBtn.textContent = 'Alert Sent ✓';
+        alertBtn.disabled = true;
+        showToast('Maintenance crew notified.');
+      });
+    }
+  }
+
+  let lastPanelRefresh = 0;
+  function refreshLiveStats(){
+    const now = Date.now();
+    if(now - lastPanelRefresh < 1500) return; // throttle re-render
+    lastPanelRefresh = now;
+    renderInfoPanel();
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  /* ---------------------------------------------------------------
+     INIT
+  ----------------------------------------------------------------*/
+  resizeCanvas();
+  seedInitial();
+  renderMap();
+  renderInfoPanel();
+  updateLegendValues();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
