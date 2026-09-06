@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkyGuard AI — Live Analysis Report</title>
+  <style>
+    :root { --bg: #0d192b; --card: #111f34; --text: #f5f8ff; --muted: #91a0b8; --border: #24344c; --accent: #42d3ff; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; padding: 24px; }
+    .container { max-width: 1200px; margin: auto; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+    header h1 { margin: 0 0 8px 0; color: var(--accent); }
+    
+    .fleet-health { background: var(--card); border: 1px solid var(--border); padding: 16px; border-radius: 12px; margin-bottom: 24px; display: flex; gap: 24px; }
+    .health-stat { display: flex; flex-direction: column; }
+    .health-stat span { font-size: 12px; color: var(--muted); text-transform: uppercase; }
+    .health-stat strong { font-size: 24px; }
+    .alert-true { color: #ff5f6d; }
+    .alert-false { color: #50d890; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+    .station-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .station-card h3 { margin: 0 0 4px 0; font-size: 16px; display: flex; justify-content: space-between; }
+    .station-card .state { font-size: 12px; color: var(--muted); margin-bottom: 12px; display: block; }
+    .tag { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+    .tag.normal { background: #00810033; color: #50d890; }
+    .tag.fault { background: #96201a33; color: #ff5f6d; }
+    .tag.weather { background: #c3930033; color: #ffd166; }
+    .tag.unknown { background: #4c8dff33; color: #42d3ff; }
+    
+    .details { font-size: 13px; line-height: 1.5; color: #d9e4f2; }
+    .details p { margin: 8px 0; }
+    .meta { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+    
+    #loading { text-align: center; padding: 40px; color: var(--accent); font-size: 18px; }
+    .error { color: #ff5f6d; text-align: center; padding: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>SkyGuard AI: Pipeline Diagnostics</h1>
+    <p style="color: var(--muted); margin: 0;">Live fetching from FastAPI ML Pipeline</p>
+  </header>
+
+  <div id="loading">Running Pipeline Analysis... Please wait.</div>
+  
+  <div id="content" style="display: none;">
+    <div class="fleet-health" id="fleetHealth">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="grid" id="stationGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ensure your FastAPI server is running on port 8000
+  const API_URL = 'http://127.0.0.1:8000/analyze';
+
+  async function fetchAnalysis() {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      
+      renderFleetHealth(data.fleet_health);
+      renderStations(data.stations);
+      
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+    } catch (error) {
+      document.getElementById('loading').innerHTML = `<div class="error">Failed to connect to the AI Pipeline.<br>Make sure 'uvicorn app:app --reload --port 8000' is running.</div>`;
+      console.error('Fetch error:', error);
+    }
+  }
+
+  function renderFleetHealth(health) {
+    const container = document.getElementById('fleetHealth');
+    const alertClass = health.alert ? 'alert-true' : 'alert-false';
+    const alertText = health.alert ? 'MAINTENANCE REQUIRED' : 'SYSTEM NOMINAL';
+    
+    container.innerHTML = `
+      <div class="health-stat"><span>Fleet Prediction Score</span><strong class="${alertClass}">${health.prediction_score}%</strong></div>
+      <div class="health-stat"><span>Severe Faults</span><strong>${health.severe}</strong></div>
+      <div class="health-stat"><span>Mild Faults</span><strong>${health.mild}</strong></div>
+      <div class="health-stat"><span>System Status</span><strong class="${alertClass}">${alertText}</strong></div>
+    `;
+  }
+
+  function renderStations(stations) {
+    const grid = document.getElementById('stationGrid');
+    grid.innerHTML = '';
+
+    stations.forEach(st => {
+      // Determine tag color based on hierarchical labels
+      let tagClass = 'unknown';
+      if (st.predicted === 'normal') tagClass = 'normal';
+      else if (['frozen', 'spike', 'other_sensor_fault'].includes(st.predicted)) tagClass = 'fault';
+      else if (['storm', 'flood', 'other_weather_event'].includes(st.predicted)) tagClass = 'weather';
+
+      const healthDisplay = st.health !== null ? `${st.health}%` : 'N/A';
+
+      const card = document.createElement('div');
+      card.className = 'station-card';
+      card.innerHTML = `
+        <h3>${st.station_id} <span class="tag ${tagClass}">${st.predicted.replace(/_/g, ' ')}</span></h3>
+        <span class="state">${st.state}</span>
+        <div class="details">
+          <p><strong>RCA:</strong> ${st.rca}</p>
+          <p><strong>Support:</strong> ${st.support}</p>
+        </div>
+        <div class="meta">
+          <span>Confidence: <strong>${st.confidence}%</strong></span>
+          <span>Severity: <strong style="text-transform: capitalize;">${st.severity}</strong></span>
+          <span>Health: <strong>${healthDisplay}</strong></span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // Run on load
+  window.onload = fetchAnalysis;
+</script>
+
+</body>
+</html>
