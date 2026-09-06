@@ -61,7 +61,7 @@
 
 <script>
   // Ensure your FastAPI server is running on port 8000
-  const API_URL = 'http://127.0.0.1:8080/analyze';
+  const API_URL = 'http://127.0.0.1:8000/analyze';
 
   async function fetchAnalysis() {
     try {
@@ -75,7 +75,7 @@
       document.getElementById('loading').style.display = 'none';
       document.getElementById('content').style.display = 'block';
     } catch (error) {
-      document.getElementById('loading').innerHTML = `<div class="error">Failed to connect to the AI Pipeline.<br>Make sure 'uvicorn app:app --reload --port 8000' is running.</div>`;
+      document.getElementById('loading').innerHTML = `<div class="error">Failed to connect to the AI Pipeline.<br>Make sure 'python -m uvicorn app:app --reload --port 8000' is running.</div>`;
       console.error('Fetch error:', error);
     }
   }
